@@ -1,3 +1,4 @@
+
 int init_communication(){
 	int rcv_fd;
   rcv_fd = open("to_server", O_RDONLY | O_NONBLOCK);
@@ -11,6 +12,7 @@ int init_communication(){
 }
 
 int get_message() {
+
 
  
  return 2;
