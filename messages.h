@@ -1,3 +1,7 @@
+#ifndef MESSAGES_H
+#define MESSAGES_H
+
+
 #define MAX_CLIENT_NUM 		5
 #define MAX_NAME_LENGTH 	16
 #define MAX_DICE_NUM 			5
@@ -93,4 +97,6 @@ struct who_won_msg{
 	int ID;
 	char name[MAX_NAME_LENGTH];
 };
+
+#endif
 

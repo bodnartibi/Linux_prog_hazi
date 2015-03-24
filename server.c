@@ -3,77 +3,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include "messages.h"
-
-// TODO hack: tudni kellene mekkora a legnagyobb üzenet
-#define READ_SIZE 1024
-#define ez
-
-
-// ----------
-// Game logic
-// ----------
-
-// ----------
-// New dices
-// osszunk új kockákat
-// ahol negatív szerepel, oda nem osztunk újat
-
-void new_dices(int dices_array[][MAX_DICE_NUM]){
-	int client;
-	int dice;
-	for(client = 0; client < MAX_CLIENT_NUM; client ++) {
-		for(dice = 0; dice < MAX_DICE_NUM; dice ++){
-			if (dices_array[client][dice] < 0 ){
-				continue;
-			}
-			dices_array[client][dice] = rand() % 6 + 1;
-		}	
-	}
-}
-
-// ------------------------
-// Add client to dice array
-// Megkeressük az első üres helyet
-
-int add_client_to_dices(int dices_array[][MAX_DICE_NUM]){
-	int client;
-	int dice;
-	int index = -1;
-	for(client = 0; client < MAX_CLIENT_NUM; client ++) {
-		if (dices_array[client][0] > -1){
-			continue;
-		}
-		for(dice = 0; dice < MAX_DICE_NUM; dice ++){
-			dices_array[client][dice] = 0;
-		}
-		index = client;
-		break;
-	}
-	return index;
-}
-
-// ----------------
-// Challenge result
-// ellenőrizzük, hogy a bid helytáll-e
-
-int check_challenge(int face, int quantity,int dices_array[][MAX_DICE_NUM]){
-	int client;
-	int dice;
-	int sum = 0;
-	for(client = 0; client < MAX_CLIENT_NUM; client ++) {
-		for(dice = 0; dice < MAX_DICE_NUM; dice ++){
-			if(dices_array[client][dice] < 0){
-				continue;
-			}
-			if (dices_array[client][dice] == face || dices_array[client][dice] == 1) {
-				sum ++;
-			}
-		}
-	}
-	return (sum >= quantity);
-}
-
-
+#include "server_gamelogic.h"
 
 // az összes kocka
 // a kliens nem érvényes kockáinál -1
@@ -121,7 +51,7 @@ int main(int argc, char* argv[]){
 	char * msg;
 	int ID;
 	msg = malloc(sizeof(READ_SIZE));
-	fd = init_communication();
+	//fd = init_communication();
 	//res = get_message(fd, msg);
 	//printf("ez %s\n", msg);
 
