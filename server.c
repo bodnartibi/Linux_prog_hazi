@@ -46,7 +46,7 @@ int get_message(int fd, char* p){
 }
 
 int main(int argc, char* argv[]){
-	int res, client, dice;
+	int res, client, dice, face, quan;
 	int fd;
 	char * msg;
 	int ID;
@@ -55,18 +55,45 @@ int main(int argc, char* argv[]){
 	//res = get_message(fd, msg);
 	//printf("ez %s\n", msg);
 
+	//printf("hamis %d\n", (1 > 2));
+  //printf("igaz %d\n", (2 > 1));
+
 	for(client = 0; client < MAX_CLIENT_NUM; client ++)
 	for(dice = 0; dice < MAX_DICE_NUM; dice ++)
 	dices[client][dice] = -2;
 
-	add_client_to_dices(dices);
-	add_client_to_dices(dices);
-	
-	new_dices(dices);
+	printf("Add clients \n");
 
-	for(client = 0; client < MAX_CLIENT_NUM; client ++)
-	for(dice = 0; dice < MAX_DICE_NUM; dice ++)
-	printf("dice %d\n", dices[client][dice]);
+	res = add_client_to_dices(dices);
+	printf("res %d\n", res);
+
+	res = add_client_to_dices(dices);
+	printf("res %d\n", res);
+
+	printf("Feltöltött kockák\n");
+	new_dices(dices);
+	for(client = 0; client < MAX_CLIENT_NUM; client ++){
+		printf("\nKliens %d: ",client);
+		for(dice = 0; dice < MAX_DICE_NUM; dice ++){
+			printf(" %d", dices[client][dice]);
+		}
+	}
+
+	printf("\nKliens kockáinak visszavonása\n");
+	res = remove_client_dices(1, 2, dices);
+	printf("res %d\n", res);
+	for(client = 0; client < MAX_CLIENT_NUM; client ++){
+		printf("\nKliens %d: ",client);
+		for(dice = 0; dice < MAX_DICE_NUM; dice ++){
+			printf(" %d", dices[client][dice]);
+		}
+	}
+
+	printf("\nChallenge: \n");
+	scanf("%d",&face);
+	scanf("%d",&quan);
+	res = check_challenge(face, quan, dices);
+	printf("res %d\n",res);
 
 	return 0;
 }

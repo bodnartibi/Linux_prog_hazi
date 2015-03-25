@@ -5,6 +5,11 @@
 // Game logic
 // ----------
 
+// Dices:
+// -2: invalid dice
+// -1: removed dice (client had a dice)
+//  0: valid dice
+
 // ----------
 // New dices
 // osszunk új kockákat
@@ -48,7 +53,7 @@ int add_client_to_dices(int dices_array[][MAX_DICE_NUM]){
 // Challenge result
 // ellenőrizzük, hogy a bid helytáll-e
 
-int check_challenge(int face, int quantity,int dices_array[][MAX_DICE_NUM]){
+int check_challenge(int face, int quantity, int dices_array[][MAX_DICE_NUM]){
 	int client;
 	int dice;
 	int sum = 0;
@@ -64,4 +69,34 @@ int check_challenge(int face, int quantity,int dices_array[][MAX_DICE_NUM]){
 	}
 	return (sum >= quantity);
 }
+
+// ----------------
+// Kliens kockájának visszavonása
+// kilesn IDja, visszavonandó kockák száma
+
+int remove_client_dices(int client_id, int dices_num, int dices_array[][MAX_DICE_NUM]){
+	int dice;
+	int found = -1;
+	int num;
+	if(client_id >= MAX_CLIENT_NUM){
+		return -1;
+	}
+	for(num = 0; num < dices_num; num ++){
+		for(dice = MAX_DICE_NUM; dice > -1; dice --){
+			if(dices_array[client_id][dice] > -1){
+				dices_array[client_id][dice] = -1;
+				found = 0;
+				break;
+			}
+		}
+	}
+	return found;
+}
+
+
+
+
+
+
+
 
