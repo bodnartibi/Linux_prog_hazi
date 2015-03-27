@@ -2,6 +2,13 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <sys/types.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <string.h>
+
 #include "messages.h"
 #include "server_gamelogic.h"
 
@@ -13,7 +20,6 @@ int dices[MAX_CLIENT_NUM][MAX_DICE_NUM];
 // könynebb kezelhetőségért a kliensek száma
 int clients_num;
 
-int dices_per_client[MAX_CLIENT_NUM];
 
 int init_communication(){
 	int rcv_fd;
@@ -51,49 +57,46 @@ int main(int argc, char* argv[]){
 	char * msg;
 	int ID;
 	msg = malloc(sizeof(READ_SIZE));
+	int listenfd = 0, connfd = 0;
+	struct sockaddr_in serv_addr; 
+
+	char sendBuff[1025];
+	time_t ticks; 
+
+	listenfd = socket(AF_INET, SOCK_STREAM, 0);
+	memset(&serv_addr, '0', sizeof(serv_addr));
+	memset(sendBuff, '0', sizeof(sendBuff)); 
+
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	serv_addr.sin_port = htons(5000); 
+
+	bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)); 
+
+	listen(listenfd, 10); 
+
+	while(1)
+	{
+		connfd = accept(listenfd, (struct sockaddr*)NULL, NULL); 
+
+		ticks = time(NULL);
+		snprintf(sendBuff, sizeof(sendBuff), "Ez \n");
+		write(connfd, sendBuff, strlen(sendBuff)); 
+
+		close(connfd);
+		sleep(1);
+	}
+
 	//fd = init_communication();
 	//res = get_message(fd, msg);
 	//printf("ez %s\n", msg);
 
 	//printf("hamis %d\n", (1 > 2));
   //printf("igaz %d\n", (2 > 1));
+/*
 
-	for(client = 0; client < MAX_CLIENT_NUM; client ++)
-	for(dice = 0; dice < MAX_DICE_NUM; dice ++)
-	dices[client][dice] = -2;
+*/
 
-	printf("Add clients \n");
-
-	res = add_client_to_dices(dices);
-	printf("res %d\n", res);
-
-	res = add_client_to_dices(dices);
-	printf("res %d\n", res);
-
-	printf("Feltöltött kockák\n");
-	new_dices(dices);
-	for(client = 0; client < MAX_CLIENT_NUM; client ++){
-		printf("\nKliens %d: ",client);
-		for(dice = 0; dice < MAX_DICE_NUM; dice ++){
-			printf(" %d", dices[client][dice]);
-		}
-	}
-
-	printf("\nKliens kockáinak visszavonása\n");
-	res = remove_client_dices(1, 2, dices);
-	printf("res %d\n", res);
-	for(client = 0; client < MAX_CLIENT_NUM; client ++){
-		printf("\nKliens %d: ",client);
-		for(dice = 0; dice < MAX_DICE_NUM; dice ++){
-			printf(" %d", dices[client][dice]);
-		}
-	}
-
-	printf("\nChallenge: \n");
-	scanf("%d",&face);
-	scanf("%d",&quan);
-	res = check_challenge(face, quan, dices);
-	printf("res %d\n",res);
 
 	return 0;
 }

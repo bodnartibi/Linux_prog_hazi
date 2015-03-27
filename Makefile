@@ -1,2 +1,6 @@
+CC=gcc
+CFLAGS=-I.
+
 hazimake: server.c server_gamelogic.c
-	gcc -o server server_gamelogic.c server.c -I. 
+	$(CC) -o server server_gamelogic.c server.c server_gamelogic_test.c
+	$(CC) -o client client.c

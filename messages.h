@@ -6,6 +6,8 @@
 #define MAX_NAME_LENGTH 	16
 #define MAX_DICE_NUM 			5
 
+#define SOCKET_SIZE 1024
+
 // -------------------------
 // Client to server messages
 // -------------------------
