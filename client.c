@@ -17,9 +17,9 @@ int main(int argc, char* argv[]){
     char recvBuff[SOCKET_SIZE];
     struct sockaddr_in serv_addr; 
 
-    if(argc != 2)
+    if(argc != 3)
     {
-        printf("\n Usage: %s <ip of server> \n",argv[0]);
+        printf("\n Usage: %s <ip of server> <user name> \n",argv[0]);
         return 1;
     } 
 

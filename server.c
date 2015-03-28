@@ -22,6 +22,8 @@ int dices[MAX_CLIENT_NUM][MAX_DICE_NUM];
 int clients_num;
 
 // kliensek
+// mutex: client_mutex
+// condition: clients_con
 int clients_connfd[MAX_CLIENT_NUM];
 
 pthread_mutex_t clients_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -73,7 +75,7 @@ void* accept_clients(){
 		//while(connfd < 0){
 		printf("Waiting for clients socket %d\n",listenfd);
 		if(	(connfd = accept(listenfd, &client_addr, &client_addr_len)) < 0){
-			fprintf(stderr,"Accept %s. \n",strerror(errno));
+			fprintf(stderr,"Hiba: accept %s. \n",strerror(errno));
 		} 
 		printf("Accept client: %d \n", connfd);
 		//}
@@ -119,7 +121,6 @@ int main(int argc, char* argv[]){
 	int ID;
 	int index;
 	msg = malloc(sizeof(READ_SIZE));
-	int connfd = 0;
 	struct sockaddr_in serv_addr;
 
 
@@ -144,7 +145,7 @@ int main(int argc, char* argv[]){
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
 
 	if(listenfd < 0){
-		fprintf(stderr,"Hiba: open socket. \n");
+		fprintf(stderr,"Hiba: open socket %s. \n",strerror(errno));;
 		exit(EXIT_FAILURE);
 	}
 	
@@ -156,7 +157,7 @@ int main(int argc, char* argv[]){
 	//serv_addr.sin_addr.s_addr = htonl("127.0.0.5");
 	if(inet_pton(AF_INET, argv[1], &serv_addr.sin_addr)<=0)
 	{
-		printf("\n inet_pton error occured\n");
+		fprintf(stderr,"Hiba: inet_pton %s. \n",strerror(errno));
 		return 1;
 	} 
 	serv_addr.sin_port = htons(5000); 
@@ -164,7 +165,7 @@ int main(int argc, char* argv[]){
 	//
 	// bind
 	if(bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0){
-		fprintf(stderr,"Hiba: bind. \n");
+		fprintf(stderr,"Hiba: bind %s. \n",strerror(errno));;
 		exit(EXIT_FAILURE);
 	}
 
@@ -177,13 +178,13 @@ int main(int argc, char* argv[]){
 
 	if(pthread_create(&accept_thread, NULL, accept_clients, NULL))
 	{
-		fprintf(stderr,"Hiba a szal letrehozasaban: accept_clients. \n");
+		fprintf(stderr,"Hiba: thread inditas, accept_thread %s. \n",strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
 	if(pthread_create(&send_thread, NULL, send_to_clients, NULL))
 	{
-		fprintf(stderr,"Hiba a szal letrehozasaban: send_to_clients. \n");
+		fprintf(stderr,"Hiba: thread inditas, send_thread %s. \n",strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
