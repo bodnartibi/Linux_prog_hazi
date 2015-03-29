@@ -2,64 +2,127 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include "messages.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <string.h>
+#include <pthread.h>
+
+#include "messages.h"
+
+// -------
+// Globals
+// -------
+
+int sockfd;
+
+// server msg
+// mutex: server_mutex
+// condition: server_con
+pthread_mutex_t server_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t server_cond = PTHREAD_COND_INITIALIZER;
+
+
+void* send_to_server(){
+	int index;
+	char sendBuff[SOCKET_SIZE];
+	int clients_num = 0;
+
+	printf("Client: Send thread started \n");
+	while(1){
+		pthread_mutex_lock(&server_mutex);
+		printf("Client: Send thread wait \n");
+		pthread_cond_wait (&server_cond,&server_mutex);
+		printf("Client: Send thread wait return \n");
+
+
+		pthread_mutex_unlock(&server_mutex);
+	}	
+	printf("Client: Send thread return \n");
+}
+
+void* receive_from_server(){
+	int n = 0;
+	char recvBuff[SOCKET_SIZE];
+	int index;
+	int clients_num = 0;
+	int res;
+
+	printf("Client: Receive thread started \n");
+	memset(recvBuff, '0',sizeof(recvBuff));
+	while(1){
+		pthread_mutex_lock(&server_mutex);
+		if((n = read(sockfd, recvBuff, sizeof(recvBuff)-1)) > 0)
+		{
+			recvBuff[n] = 0;
+
+			// debug
+			if(fputs(recvBuff, stdout) == EOF)
+			{
+					printf("\n Error : Fputs error\n");
+			}
+			
+			// TODO state-ek
+			res = process_client_message(0, recvBuff, sizeof(recvBuff));
+			continue;
+		}
+		else{
+			fprintf(stderr,"Client: Hiba: read %d %s. \n",n,strerror(errno));
+			return;
+		}
+		pthread_cond_signal (&server_cond);
+
+
+		pthread_mutex_unlock(&server_mutex);
+	}	
+	printf("Client: Receive thread return \n");
+}
+
 
 int main(int argc, char* argv[]){
+	pthread_t receive_thread;
+	pthread_t send_thread;
 
+	struct sockaddr_in serv_addr; 
 
-    int sockfd = 0, n = 0;
-    char recvBuff[SOCKET_SIZE];
-    struct sockaddr_in serv_addr; 
+	if(argc != 3)
+		{
+		printf("\n Usage: %s <ip of server> <user name> \n",argv[0]);
+			return 1;
+		} 
 
-    if(argc != 3)
-    {
-        printf("\n Usage: %s <ip of server> <user name> \n",argv[0]);
-        return 1;
-    } 
+		if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+		{
+			printf("\n Error : Could not create socket \n");
+			return 1;
+		} 
 
-    memset(recvBuff, '0',sizeof(recvBuff));
-    if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-    {
-        printf("\n Error : Could not create socket \n");
-        return 1;
-    } 
+		memset(&serv_addr, '0', sizeof(serv_addr)); 
 
-    memset(&serv_addr, '0', sizeof(serv_addr)); 
+		serv_addr.sin_family = AF_INET;
+		serv_addr.sin_port = htons(5000); 
 
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(5000); 
+		if(inet_pton(AF_INET, argv[1], &serv_addr.sin_addr)<=0)
+		{
+			printf("\n inet_pton error occured\n");
+			return 1;
+		} 
 
-    if(inet_pton(AF_INET, argv[1], &serv_addr.sin_addr)<=0)
-    {
-        printf("\n inet_pton error occured\n");
-        return 1;
-    } 
+		if( connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+		{
+		   printf("\n Error : Connect Failed \n");
+		   return 1;
+		} 
 
-    if( connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
-    {
-       printf("\n Error : Connect Failed \n");
-       return 1;
-    } 
+		if(pthread_create(&receive_thread, NULL, receive_from_server, NULL))
+		{
+			fprintf(stderr,"Server: Hiba: thread inditas, send_thread %s. \n",strerror(errno));
+			exit(EXIT_FAILURE);
+		}
 
-    while ( (n = read(sockfd, recvBuff, sizeof(recvBuff)-1)) > 0)
-    {
-        recvBuff[n] = 0;
-        if(fputs(recvBuff, stdout) == EOF)
-        {
-            printf("\n Error : Fputs error\n");
-        }
-    } 
-
-    if(n < 0)
-    {
-        printf("\n Read error \n");
-    }
+		pthread_join(receive_thread, NULL);
 
 	return 0;
 }
