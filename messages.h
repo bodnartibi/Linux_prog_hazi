@@ -1,6 +1,11 @@
 #ifndef MESSAGES_H
 #define MESSAGES_H
 
+#define TRUE 1
+#define FALSE 0
+#define true TRUE
+#define false FALSE
+
 
 #define MAX_CLIENT_NUM 		1
 #define MAX_NAME_LENGTH 	16
@@ -73,10 +78,15 @@ struct client_gen_msg {
 // Client to server
 
 // One client sends
-struct client_reg_msg {
+struct client_reg_msg{
 	int msgID;
 	int client_ID;
 	char name[MAX_NAME_LENGTH];
+};
+
+struct client_ready{
+	int msgID;
+	int client_ID;
 	int ready;
 };
 

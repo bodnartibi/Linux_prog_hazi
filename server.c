@@ -79,6 +79,7 @@ int main(int argc, char* argv[]){
 
 	pthread_t accept_thread;
 	pthread_t send_thread;
+	pthread_t receive_thread;
 
 	if(argc != 2)
 	{
@@ -134,10 +135,19 @@ int main(int argc, char* argv[]){
 		fprintf(stderr,"Server: Hiba: thread inditas, accept_thread %s. \n",strerror(errno));
 		exit(EXIT_FAILURE);
 	}
-
+/*
 	if(pthread_create(&send_thread, NULL, send_to_clients, (void*)&listenfd))
 	{
 		fprintf(stderr,"Server: Hiba: thread inditas, send_thread %s. \n",strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+*/	
+
+	// TODO gány , legyen condition
+	sleep(10);
+	if(pthread_create(&receive_thread, NULL, receive_from_clients, (void*)&listenfd))
+	{
+		fprintf(stderr,"Server: Hiba: thread inditas, receive_thread %s. \n",strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 

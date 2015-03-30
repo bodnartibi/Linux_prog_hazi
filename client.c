@@ -11,20 +11,11 @@
 #include <pthread.h>
 
 #include "messages.h"
-
-// -------
-// Globals
-// -------
-
-int sockfd;
-
-// server msg
-// mutex: server_mutex
-// condition: server_con
-pthread_mutex_t server_mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t server_cond = PTHREAD_COND_INITIALIZER;
+#include "client.h"
 
 
+
+/*
 void* send_to_server(){
 	int index;
 	char sendBuff[SOCKET_SIZE];
@@ -42,7 +33,7 @@ void* send_to_server(){
 	}	
 	printf("Client: Send thread return \n");
 }
-
+*/
 void* receive_from_server(){
 	int n = 0;
 	char recvBuff[SOCKET_SIZE];
@@ -87,44 +78,49 @@ int main(int argc, char* argv[]){
 
 	struct sockaddr_in serv_addr; 
 
-	if(argc != 3)
-		{
-		printf("\n Usage: %s <ip of server> <user name> \n",argv[0]);
+	// check arguments
+	if(argc != 3){
+		printf("\n Usage: %s <ip of server> <user name (max 15 char)> \n",argv[0]);
 			return 1;
-		} 
+	}
 
-		if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-		{
-			printf("\n Error : Could not create socket \n");
-			return 1;
-		} 
+	if(strlen(argv[2]) > MAX_NAME_LENGTH){
+		printf("\n Usage: %s <ip of server> <user name (max 15 char)> \n",argv[0]);
+		return 1;
+	}
 
-		memset(&serv_addr, '0', sizeof(serv_addr)); 
+	strcpy(&my_name[0], (char*)argv[2]);
+	printf("Your name: %s \n", my_name);
 
-		serv_addr.sin_family = AF_INET;
-		serv_addr.sin_port = htons(5000); 
+	pthread_mutex_init(&server_mutex,NULL);
+	pthread_cond_init(&server_cond,NULL);
 
-		if(inet_pton(AF_INET, argv[1], &serv_addr.sin_addr)<=0)
-		{
-			printf("\n inet_pton error occured\n");
-			return 1;
-		} 
+	if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0){
+		printf("\n Error : Could not create socket \n");
+		return 1;
+	} 
 
-		if(connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
-		{
-		   printf("\n Error : Connect Failed \n");
-		   return 1;
-		}
+	memset(&serv_addr, '0', sizeof(serv_addr)); 
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_port = htons(5000); 
+	if(inet_pton(AF_INET, argv[1], &serv_addr.sin_addr)<=0){
+		printf("\n inet_pton error occured\n");
+		return 1;
+	} 
 
-		printf("Client: Connected %d\n", sockfd);
+	if(connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0){
+	   printf("\n Error : Connect Failed \n");
+	   return 1;
+	}
 
-		if(pthread_create(&receive_thread, NULL, receive_from_server, NULL))
-		{
-			fprintf(stderr,"Server: Hiba: thread inditas, send_thread %s. \n",strerror(errno));
-			exit(EXIT_FAILURE);
-		}
+	printf("Client: Connected %d\n", sockfd);
 
-		pthread_join(receive_thread, NULL);
+	if(pthread_create(&receive_thread, NULL, receive_from_server, NULL)){
+		fprintf(stderr,"Server: Hiba: thread inditas, send_thread %s. \n",strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	pthread_join(receive_thread, NULL);
 
 	return 0;
 }
