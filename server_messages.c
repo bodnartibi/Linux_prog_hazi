@@ -30,6 +30,7 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 		return -1;
 	}
 	
+	printf("Server: Process message: %d", msg_ID);
 	switch(msg_ID){
 		case REG_CLIENT:
 			client_reg = *(struct client_reg_msg*)msg;

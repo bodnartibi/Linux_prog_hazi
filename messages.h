@@ -7,7 +7,7 @@
 #define false FALSE
 
 
-#define MAX_CLIENT_NUM 		1
+#define MAX_CLIENT_NUM 		2
 #define MAX_NAME_LENGTH 	16
 #define MAX_DICE_NUM 			5
 

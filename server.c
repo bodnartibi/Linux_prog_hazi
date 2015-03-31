@@ -1,13 +1,18 @@
 #include <stdio.h>
-#include <errno.h>
 #include <stdlib.h>
+#include <string.h>
+
+#include <errno.h>
 #include <fcntl.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <string.h>
+
+#include <sys/select.h>
+#include <sys/time.h>
+
 #include <pthread.h>
 
 #include "messages.h"
@@ -17,69 +22,22 @@
 
 int listenfd;
 
-// ------------------------
-// Send messages to clients
-// ------------------------
-
-void* send_to_clients(){
-/*
-	int index;
-	char sendBuff[SOCKET_SIZE];
-	int clients_num = 0;
-
-	printf("Server: Send thread started \n");
-	while(1){
-		pthread_mutex_lock(&clients_mutex);
-		printf("Server: Send thread wait \n");
-		pthread_cond_wait (&clients_cond,&clients_mutex);
-		printf("Server: Send thread wait return \n");
-	
-		for(index = 0, clients_num = 0; index < MAX_CLIENT_NUM; index++){
-			if(clients_connfd[index] > -1){
-				clients_num ++;
-			}
-		}
-
-		// send ID to client
-		
-		write(clients_connfd[index], sendBuff, strlen(sendBuff));
-		
-//		snprintf(sendBuff, sizeof(sendBuff), "Kliensek szama: %d \n",clients_num);
-
-		for(index = 0, clients_num = 0; index < MAX_CLIENT_NUM; index++){
-			if(clients_connfd[index] > -1){
-				//write(clients_connfd[index], sendBuff, strlen(sendBuff)); 
-			}
-		}
-		pthread_mutex_unlock(&clients_mutex);
-	}	
-	printf("Server: Send thread return \n");
-*/
-}
-
-
-
-// TODO mi van a conn closeokkal? hol?
-
-// close(connfd);
-//
-
-
-
 int main(int argc, char* argv[]){
-	int res, client, dice, face, quan;
+	int res, dice, face, quan,i, found;
 	int fd;
+	int new_socket, client;
 	char * msg;
 	int ID;
 	int index;
+	struct sockaddr client_addr;
+	char recvBuff[SOCKET_SIZE];
+	socklen_t client_addr_len;
+	int client_socket[MAX_CLIENT_NUM];
 	msg = malloc(sizeof(READ_SIZE));
 	struct sockaddr_in serv_addr;
-
-	char sendBuff[1025];
-
-	pthread_t accept_thread;
-	pthread_t send_thread;
-	pthread_t receive_thread;
+	//set of socket descriptors
+	fd_set readfds, readfds_copy;
+	int max_fd;
 
 	if(argc != 2)
 	{
@@ -99,16 +57,15 @@ int main(int argc, char* argv[]){
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
 
 	if(listenfd < 0){
-		fprintf(stderr,"Server:Hiba: open socket %s. \n",strerror(errno));;
+		fprintf(stderr,"Server: Hiba: open socket %s. \n",strerror(errno));;
 		exit(EXIT_FAILURE);
 	}
 	
 	printf("Socket created. %d \n", listenfd);
 	memset(&serv_addr, '0', sizeof(serv_addr));
-	memset(sendBuff, '0', sizeof(sendBuff)); 
+	//memset(sendBuff, '0', sizeof(sendBuff)); 
 
 	serv_addr.sin_family = AF_INET;
-	//serv_addr.sin_addr.s_addr = htonl("Server: 127.0.0.5");
 	if(inet_pton(AF_INET, argv[1], &serv_addr.sin_addr)<=0)
 	{
 		fprintf(stderr,"Server: Hiba: inet_pton %s. \n",strerror(errno));
@@ -119,7 +76,7 @@ int main(int argc, char* argv[]){
 	//
 	// bind
 	if(bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0){
-		fprintf(stderr,"Server: Hiba: bind %s. \n",strerror(errno));;
+		fprintf(stderr,"Server: Hiba: bind %s. \n",strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
@@ -130,44 +87,90 @@ int main(int argc, char* argv[]){
 		exit(EXIT_FAILURE);
 	}
 
-	if(pthread_create(&accept_thread, NULL, accept_clients, (void*)&listenfd))
-	{
-		fprintf(stderr,"Server: Hiba: thread inditas, accept_thread %s. \n",strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-/*
-	if(pthread_create(&send_thread, NULL, send_to_clients, (void*)&listenfd))
-	{
-		fprintf(stderr,"Server: Hiba: thread inditas, send_thread %s. \n",strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-*/	
-
-	// TODO gány , legyen condition
-	sleep(10);
-	if(pthread_create(&receive_thread, NULL, receive_from_clients, (void*)&listenfd))
-	{
-		fprintf(stderr,"Server: Hiba: thread inditas, receive_thread %s. \n",strerror(errno));
-		exit(EXIT_FAILURE);
+	for (i = 0; i < MAX_CLIENT_NUM; i++){
+		client_socket[i] = 0;
 	}
 
-	// mindenki küldött readyt
-	pthread_mutex_lock(&state_mutex);
-	pthread_cond_wait (&state_cond,&state_mutex);
-	pthread_cancel(accept_thread);
-	state = GAME_PHASE;
-	pthread_mutex_unlock(&state_mutex);
+	//clear the socket set
+	FD_ZERO(&readfds);
+  
+	//add master socket to set
+	FD_SET(listenfd, &readfds);
+	max_fd = listenfd;
 
+	printf("Waiting for clients\n");
 
+	while(true){
+		
+		// másolunk, mert a select módosít
+		readfds_copy = readfds;
+		
+		res = select( max_fd + 1 , &readfds_copy, NULL , NULL , NULL);
+		if(res < 0){
+			fprintf(stderr,"Server: Hiba: select %s. \n",strerror(errno));
+		}
 
+		// valami történt
+
+		// a listen volt?
+		if (FD_ISSET(listenfd, &readfds)){
+
+			if ((new_socket = accept(listenfd, &client_addr, &client_addr_len)) < 0){
+				fprintf(stderr,"Server: Hiba: Accept %s. \n",strerror(errno));
+				exit(EXIT_FAILURE);
+			}
+			
+			for(index = 0; index < MAX_CLIENT_NUM; index++){
+//			if(clients_connfd[index] == connfd){
+//				break;
+//			}
+				if(clients_connfd[index] < 0){
+					found = 1;
+					clients_connfd[index] = new_socket;
+					printf("Server: New client added. index: %d fd: %d\n",index, new_socket);	
+				}
+				for(index = 0, clients_num = 0; index < MAX_CLIENT_NUM; index++){	
+					if(clients_connfd[index] > -1){
+						clients_num ++;
+						break;
+					}
+				}
+				//client_ID = (struct your_ID*)malloc(sizeof(client_ID));
+				client_ID.msgID = YOUR_ID;
+				client_ID.client_ID = index;
+				printf("Server: yourID index: %d\n",index);
+				write(clients_connfd[index], (void*)&client_ID, sizeof(struct your_ID));
+				//free(client_ID);
+				break;
+			}
+		}
+
+		// a kliens küldött vmit
+		for (i = 0; i < MAX_CLIENT_NUM; i++){
+
+			printf("Catch message from clients\n");
+			client = client_socket[i];
+			// ha nem ez volt akkor megyünk tovább
+			if (!FD_ISSET(client, &readfds)){
+					continue;
+			}
+			printf("Catch message client: %d\n", i);
+			if((res = read(listenfd, recvBuff, sizeof(recvBuff)-1)) > 0){
+				recvBuff[res] = 0;
 	
-	pthread_join(accept_thread, NULL);
+				if(fputs(recvBuff, stdout) == EOF){
+						printf("\n Server: Error : Fputs error\n");
+				}
 
-	// végetért a regisztrációs fázis
+				res = process_server_message(state, recvBuff, sizeof(recvBuff),dices);
+			}
+			else{
+				fprintf(stderr,"Server: Hiba: read %d %s. \n",res,strerror(errno));
+			}
 
+		}
 
-	pthread_join(send_thread, NULL);
-	
+	}
 	
 
 	return 0;
