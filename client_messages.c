@@ -24,7 +24,7 @@ struct client_game_msg					game_msg;
 int process_client_message(int phase, void* msg, int msglen) {
 	int msg_ID ;
 	msg_ID = *(int*)msg;
-
+	int res;
 	// ------------------------------
 	// check if ID matches with phase
 	// TODO ez még gány
@@ -46,7 +46,11 @@ int process_client_message(int phase, void* msg, int msglen) {
 			reg.client_ID = my_ID.client_ID;
 			strcpy(&reg.name[0], my_name);
 							
-			write(sockfd, (void*)&reg, sizeof(struct client_reg_msg));
+			res = write(sockfd, (void*)&reg, sizeof(struct client_reg_msg));
+			if(res < 0){
+				fprintf(stderr,"Client: Hiba: write %d %s. \n",res,strerror(errno));
+			}
+
 			break;	
 		default:
 			fprintf(stderr,"Hiba: Client: invalid messagetype %d msgID: %d\n", phase, msg_ID);
