@@ -24,7 +24,7 @@
 int listenfd;
 
 int main(int argc, char* argv[]){
-	int res, dice, face, quan,i, found;
+	int res, dice, face, quan, found;
 	int fd;
 	int new_socket, client;
 	char * msg;
@@ -58,6 +58,7 @@ int main(int argc, char* argv[]){
 
 	for(index = 0; index < MAX_CLIENT_NUM; index++){
 		clients_connfd[index] = -1;
+		clients_ready[index] = -1;
 	}
 
 	//
@@ -163,15 +164,15 @@ int main(int argc, char* argv[]){
 		else{
 		// a kliens küldött vmit
 			//printf("Catch message from clients\n");
-			for (i = 0; i < MAX_CLIENT_NUM; i++){
-				client = clients_connfd[i];
+			for (index = 0; index < MAX_CLIENT_NUM; index++){
+				client = clients_connfd[index];
 				if(client < 0){
 					continue;
 				}
 				printf("Catch message from client %d\n", client);
 				// ha nem ez volt akkor megyünk tovább	
 				if (FD_ISSET(client, &readfds)){
-					printf("Catch message client: %d\n", i);
+					printf("Catch message client: %d\n", index);
 					res = read(client, recvBuff, sizeof(recvBuff)-1);
 					if(res > 0){
 						recvBuff[res] = 0;
@@ -179,8 +180,9 @@ int main(int argc, char* argv[]){
 						res = process_server_message(state, recvBuff, sizeof(recvBuff),dices);
 					}
 					else if(res == 0){
-						printf("Client disconnected: %d\n", i);
-						clients_connfd[i] = -1;
+						printf("Client disconnected: %d\n", index);
+						clients_connfd[index] = -1;
+						clients_ready[index] = -1;
 					}
 					else{
 						fprintf(stderr,"Server: Hiba: read %d %s. \n",res,strerror(errno));

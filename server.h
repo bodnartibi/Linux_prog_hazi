@@ -18,6 +18,7 @@ int clients_num;
 // mutex: client_mutex
 // condition: clients_con
 int clients_connfd[MAX_CLIENT_NUM];
+int clients_ready[MAX_CLIENT_NUM];
 pthread_mutex_t clients_mutex;
 pthread_cond_t clients_cond;
 

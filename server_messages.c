@@ -14,11 +14,32 @@
 #include "server_gamelogic.h"
 #include "server.h"
 
+int is_every_client_ready(){
+	int i, j;
+	int ready = true;
+
+	for(i = 0; i < MAX_CLIENT_NUM; i++){
+		if((clients_connfd[i] > -1) && (clients_ready[i] != true)){
+			ready = false;
+			break;
+		}
+	}
+	return ready;
+}
+
+// return:
+//  0: nothing special
+//  1: clients ready
+// -1: error
+
 int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DICE_NUM]) {
 	int msg_ID ;
 	int	client_ID;
+	int index, i, j;
 	msg_ID = *(int*)msg;
-	client_ID = *(int*)(msg + 1);	
+	client_ID = *(int*)(msg + 1);
+	int ret = 0;
+
 	// ------------------------------
 	// check if ID matches with phase
 	// TODO ez még gány
@@ -31,18 +52,52 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 //	}
 	
 	printf("Server: Process message: %d\n", msg_ID);
+
 	switch(msg_ID){
+
 		case REG_CLIENT:
 			client_reg = *(struct client_reg_msg*)msg;
 			printf("Server: Client registered name: %s\n", client_reg.name);
 			break;
+
+
+		case CLIENT_READY:
+			client_red = *(struct client_ready*)msg;
+			for(index = 0; index < MAX_CLIENT_NUM; index++){
+				if(clients_connfd[index] > 0){
+					if(client_red.ready == true){
+						printf("Server: Client ready: ID %d\n", client_red.client_ID);
+						clients_ready[index] = true;
+
+						// mindenki kész?
+						if(is_every_client_ready() == true){
+							ret = 1;
+						}
+
+						break;
+					}
+					else if(client_red.ready == false){
+						printf("Server: Client doesn't ready: ID %d\n", client_red.client_ID);
+						clients_ready[index] = false;
+						break;
+					}
+					else{
+						fprintf(stderr,"Hiba: Server: invalid ready state: %d", client_red.ready);
+						break;
+					}
+				}
+			}
+			break;
+
+
 		default:
 			fprintf(stderr,"Hiba: Server: unknown message: %d", msg_ID);
+			ret = -1;
 			break;
 	}
 	
 	printf("Server: get message ID %d client %d\n",msg_ID, client_ID);
-	return 0;
+	return ret;
 //	new_dices(dices);
 }
 
