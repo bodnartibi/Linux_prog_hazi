@@ -22,26 +22,26 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 	// ------------------------------
 	// check if ID matches with phase
 	// TODO ez még gány
-	if( ((msg_ID >= 0x10) && (phase != 0)) || 
-			((msg_ID < 0x10 || msg_ID >= 0x30) && (phase != 1)) || 
-			((msg_ID <= 0x30) && (phase != 2))
-		){
-		fprintf(stderr,"Hiba: Server: invalid message Phase %d msgID: %d . \n", phase, msg_ID);
-		return -1;
-	}
+//	if( ((msg_ID >= 0x10) && (phase != 0)) || 
+//			((msg_ID < 0x10 || msg_ID >= 0x30) && (phase != 1)) || 
+//			((msg_ID <= 0x30) && (phase != 2))
+//		){
+//		fprintf(stderr,"Hiba: Server: invalid message Phase %d msgID: %d . \n", phase, msg_ID);
+//		return -1;
+//	}
 	
-	printf("Server: Process message: %d", msg_ID);
+	printf("Server: Process message: %d\n", msg_ID);
 	switch(msg_ID){
 		case REG_CLIENT:
 			client_reg = *(struct client_reg_msg*)msg;
-			printf("Server: Client registered name: %s", client_reg.name);
+			printf("Server: Client registered name: %s\n", client_reg.name);
 			break;
 		default:
 			fprintf(stderr,"Hiba: Server: unknown message: %d", msg_ID);
 			break;
 	}
 	
-	printf("Server: get message ID %d client %d",msg_ID, client_ID);
+	printf("Server: get message ID %d client %d\n",msg_ID, client_ID);
 	return 0;
 //	new_dices(dices);
 }

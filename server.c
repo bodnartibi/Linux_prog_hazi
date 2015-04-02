@@ -33,7 +33,6 @@ int main(int argc, char* argv[]){
 	struct sockaddr client_addr;
 	char recvBuff[SOCKET_SIZE];
 	socklen_t client_addr_len;
-	int client_socket[MAX_CLIENT_NUM];
 
 	struct sockaddr_in serv_addr;
 	//set of socket descriptors
@@ -96,10 +95,11 @@ int main(int argc, char* argv[]){
 		exit(EXIT_FAILURE);
 	}
 
-	for (i = 0; i < MAX_CLIENT_NUM; i++){
-		client_socket[i] = 0;
-	}
+	printf("Waiting for clients\n");
 
+	while(true){
+	
+//	sleep(1);
 	//clear the socket set
 	FD_ZERO(&readfds);
   
@@ -107,15 +107,18 @@ int main(int argc, char* argv[]){
 	FD_SET(listenfd, &readfds);
 	max_fd = listenfd;
 
-	printf("Waiting for clients\n");
-
-	while(true){
-		
-		// másolunk, mert a select módosít
-		readfds_copy = readfds;
+	for(index = 0; index < MAX_CLIENT_NUM; index ++){
+		if(clients_connfd[index] < 0){
+			continue;
+		}
+		FD_SET(clients_connfd[index], &readfds);
+		if(clients_connfd[index] > max_fd){
+			max_fd = clients_connfd[index];
+		}
+	}	
 
 		printf("Select...\n");		
-		res = select(max_fd + 1 , &readfds_copy, NULL , NULL , NULL);
+		res = select(max_fd + 1 , &readfds, NULL , NULL , NULL);
 		if(res < 0){
 			fprintf(stderr,"Server: Hiba: select %s. \n",strerror(errno));
 		}
@@ -123,7 +126,7 @@ int main(int argc, char* argv[]){
 		// valami történt
 
 		// a listen volt?
-		if (FD_ISSET(listenfd, &readfds_copy)){
+		if (FD_ISSET(listenfd, &readfds)){
 			printf("Catch connecting\n");
 			if ((new_socket = accept(listenfd, (struct sockaddr*)&client_addr, &client_addr_len)) < 0){
 				fprintf(stderr,"Server: Hiba: Accept %s. \n",strerror(errno));
@@ -137,12 +140,6 @@ int main(int argc, char* argv[]){
 				if(clients_connfd[index] < 0){
 					found = 1;
 					clients_connfd[index] = new_socket;
-
-					// adjuk hozzá h a select rá is figyeljen
-					FD_SET(new_socket, &readfds);
-					if(new_socket > max_fd){
-						max_fd = new_socket;
-					}
 					
 					clients_num ++;
 					printf("Server: New client added. index: %d fd: %d\n",index, new_socket);	
@@ -165,23 +162,30 @@ int main(int argc, char* argv[]){
 		}
 		else{
 		// a kliens küldött vmit
-			printf("Catch message from clients\n");
+			//printf("Catch message from clients\n");
 			for (i = 0; i < MAX_CLIENT_NUM; i++){
-				client = client_socket[i];
+				client = clients_connfd[i];
+				if(client < 0){
+					continue;
+				}
+				printf("Catch message from client %d\n", client);
 				// ha nem ez volt akkor megyünk tovább	
-				if (!FD_ISSET(client, &readfds_copy)){
-						continue;
-				}
-				printf("Catch message client: %d\n", i);
-				if((res = read(listenfd, recvBuff, sizeof(recvBuff)-1)) > 0){
-					recvBuff[res] = 0;
+				if (FD_ISSET(client, &readfds)){
+					printf("Catch message client: %d\n", i);
+					res = read(client, recvBuff, sizeof(recvBuff)-1);
+					if(res > 0){
+						recvBuff[res] = 0;
 		
-					res = process_server_message(state, recvBuff, sizeof(recvBuff),dices);
+						res = process_server_message(state, recvBuff, sizeof(recvBuff),dices);
+					}
+					else if(res == 0){
+						printf("Client disconnected: %d\n", i);
+						clients_connfd[i] = -1;
+					}
+					else{
+						fprintf(stderr,"Server: Hiba: read %d %s. \n",res,strerror(errno));
+					}
 				}
-				else{
-					fprintf(stderr,"Server: Hiba: read %d %s. \n",res,strerror(errno));
-				}
-
 			}
 		}
 
