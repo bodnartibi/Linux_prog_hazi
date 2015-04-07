@@ -55,7 +55,6 @@
 
 // Game phase
 #define NEW_DICE_ROLL			0x10
-#define YOUR_TURN 				0x11
 #define PROP_BID					0x12
 #define WHO_WON						0x13
 
@@ -117,13 +116,15 @@ struct server_newroll_msg{
 	int dices[MAX_DICE_NUM];
 };
 
-// Your turn message: only the msg ID which we need
-
+// Your turn message
+// and prop bid
+// your_turn if it is your turn
 // To one
 struct server_prop_bid_msg{
 	int msgID;
 	int bid_face;
 	int bid_quantity;
+	int your_turn;
 };
 
 struct who_won_msg{

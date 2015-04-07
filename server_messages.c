@@ -14,6 +14,46 @@
 #include "server_gamelogic.h"
 #include "server.h"
 
+// melyik jatekos jon epp
+int act_client;
+
+int act_face;
+int act_quan;
+
+int next_round(){
+	int index;
+	int res;
+	int client;
+
+	prop_act_bid.msgID  = PROP_BID;
+	prop_act_bid.bid_face = act_face;
+	prop_act_bid.bid_quantity = act_quan;
+
+	act_client++;
+	if(act_client - 1 > clients_num){
+		act_client = 0;
+	}
+
+	for(index = 0; index < MAX_CLIENT_NUM; index++){
+		client = clients_connfd[index];
+		if(client <= 0){
+			continue;
+		}
+
+		if(index == act_client){
+			prop_act_bid.your_turn = true;
+		} else {
+			prop_act_bid.your_turn = false;
+		}
+
+		res = write(client, (void*)&prop_act_bid, sizeof(struct server_prop_bid_msg));
+		
+		if(res < 0){
+			fprintf(stderr,"Hiba: Server: send message in next round, index %d cliet ID %d %s\n", index, client, strerror(errno));
+		}		
+	}
+}
+
 int is_every_client_ready(){
 	int i, j;
 	int ready = true;
@@ -71,7 +111,12 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 
 						// mindenki kész?
 						if(is_every_client_ready() == true){
+							act_face = 0;
+							act_quan = 0;
+							act_client = 0;
 							ret = 1;
+							new_dices(dices);
+							next_round();
 						}
 
 						break;
@@ -89,6 +134,17 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 			}
 			break;
 
+		case CHALLENGE:
+			client_game = *(struct client_game_msg*)msg;
+			break;
+		
+		case NEW_BID:
+			client_game = *(struct client_game_msg*)msg;
+			act_face = client_game.bid_face;
+			act_quan = client_game.bid_quantity;
+			act_client++;
+			next_round();
+			break;
 
 		default:
 			fprintf(stderr,"Hiba: Server: unknown message: %d", msg_ID);

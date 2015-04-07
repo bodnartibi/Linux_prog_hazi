@@ -40,7 +40,7 @@ int main(int argc, char* argv[]){
 	int max_fd;
 	client_addr_len = sizeof(client_addr);
 
-	
+	clients_num = 0;
 	msg = malloc(sizeof(READ_SIZE));
 
 	if(argc != 2)
@@ -141,7 +141,10 @@ int main(int argc, char* argv[]){
 				if(clients_connfd[index] < 0){
 					found = 1;
 					clients_connfd[index] = new_socket;
-					
+					res = add_client_to_dices(dices);
+					if(index != res){
+						fprintf(stderr,"Server: Hiba: add_client_to_dices res %d  index %d. \n",res, index);
+					}
 					clients_num ++;
 					printf("Server: New client added. index: %d fd: %d\n",index, new_socket);	
 				}
