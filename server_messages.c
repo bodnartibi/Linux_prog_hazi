@@ -103,11 +103,11 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 
 		case CLIENT_READY:
 			client_red = *(struct client_ready*)msg;
-			for(index = 0; index < MAX_CLIENT_NUM; index++){
-				if(clients_connfd[index] > 0){
+			printf("Server: Client ready id: %d\n", client_red.client_ID);
+
 					if(client_red.ready == true){
 						printf("Server: Client ready: ID %d\n", client_red.client_ID);
-						clients_ready[index] = true;
+						clients_ready[client_red.client_ID] = true;
 
 						// mindenki kész?
 						if(is_every_client_ready() == true){
@@ -123,15 +123,15 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 					}
 					else if(client_red.ready == false){
 						printf("Server: Client doesn't ready: ID %d\n", client_red.client_ID);
-						clients_ready[index] = false;
+						clients_ready[client_red.client_ID] = false;
 						break;
 					}
 					else{
 						fprintf(stderr,"Hiba: Server: invalid ready state: %d", client_red.ready);
 						break;
 					}
-				}
-			}
+
+
 			break;
 
 		case CHALLENGE:
@@ -142,7 +142,6 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 			client_game = *(struct client_game_msg*)msg;
 			act_face = client_game.bid_face;
 			act_quan = client_game.bid_quantity;
-			act_client++;
 			next_round();
 			break;
 

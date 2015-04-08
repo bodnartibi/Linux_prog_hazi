@@ -108,17 +108,19 @@ int main(int argc, char* argv[]){
 	FD_SET(listenfd, &readfds);
 	max_fd = listenfd;
 
+	printf("Select... ");	
 	for(index = 0; index < MAX_CLIENT_NUM; index ++){
 		if(clients_connfd[index] < 0){
 			continue;
 		}
+		printf("%d ",clients_connfd[index]);
 		FD_SET(clients_connfd[index], &readfds);
 		if(clients_connfd[index] > max_fd){
 			max_fd = clients_connfd[index];
 		}
 	}	
-
-		printf("Select...\n");		
+	printf(" .\n");	
+	
 		res = select(max_fd + 1 , &readfds, NULL , NULL , NULL);
 		if(res < 0){
 			fprintf(stderr,"Server: Hiba: select %s. \n",strerror(errno));
@@ -172,7 +174,7 @@ int main(int argc, char* argv[]){
 				if(client < 0){
 					continue;
 				}
-				printf("Catch message from client %d\n", client);
+				//printf("Catch message from client %d\n", client);
 				// ha nem ez volt akkor megyünk tovább	
 				if (FD_ISSET(client, &readfds)){
 					printf("Catch message client: %d\n", index);
