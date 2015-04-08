@@ -26,7 +26,7 @@ int process_client_message(int phase, void* msg, int msglen) {
 	int msg_ID ;
 	msg_ID = *(int*)msg;
 	int res;
-
+	int index;
 	int my_face;
 	int my_quan;
 	// ------------------------------
@@ -76,20 +76,32 @@ int process_client_message(int phase, void* msg, int msglen) {
 			printf("Client: Actual bid: face %d quantity %d your turn? %d\n", act_bid.bid_face, act_bid.bid_quantity, act_bid.your_turn);
 			
 			//TODO külön kezelni a user inputot, hogy bármikor tudjunk írni
-			scanf("%d, %d",&my_face, &my_quan);
+			scanf("%d %d",&my_face, &my_quan);
 			//TODO csak nagyobb lehet a tét
 			printf("Client: New bid: face %d quantity %d\n", my_face, my_quan);
 
-		game_msg.msgID = NEW_BID;
-		game_msg.client_ID = my_ID.client_ID;
-		game_msg.bid_face = my_face;
-		game_msg.bid_quantity = my_quan;
+			game_msg.msgID = NEW_BID;
+			game_msg.client_ID = my_ID.client_ID;
+			game_msg.bid_face = my_face;
+			game_msg.bid_quantity = my_quan;
+	
+			res = write(sockfd, (void*)&game_msg, sizeof(game_msg));
+			if(res < 0){
+				fprintf(stderr,"Client: Hiba: write %d %s. \n",res,strerror(errno));
+			}
+			break;
 
-		res = write(sockfd, (void*)&game_msg, sizeof(game_msg));
-		if(res < 0){
-			fprintf(stderr,"Client: Hiba: write %d %s. \n",res,strerror(errno));
-		}
-		break;
+		case NEW_DICE_ROLL:
+			act_roll = *(struct server_newroll_msg*)msg;
+		
+			printf("Client: Your dices: ");
+			for(index = 0; index < MAX_DICE_NUM; index++){
+				if(act_roll.dices[index] > 0)
+				printf("%d ",act_roll.dices[index]);
+			}
+			printf("\n");
+	
+			break;
 
 		default:
 			fprintf(stderr,"Hiba: Client: invalid messagetype %d msgID: %d\n", phase, msg_ID);

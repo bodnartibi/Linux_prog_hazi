@@ -21,6 +21,8 @@
 #define GAME_PHASE 1
 #define END_PHASE 2
 
+// TODO kezdőértéknek is meg lehet adni az msgID-t, felesleges máshol megadni
+
 
 // -------------------------
 // Client to server messages

@@ -44,29 +44,30 @@ void* receive_from_server(){
 	printf("Client: Receive thread started \n");
 	memset(recvBuff, '0',sizeof(recvBuff));
 	while(1){
-		pthread_mutex_lock(&server_mutex);
+		//pthread_mutex_lock(&server_mutex);
 		if((n = read(sockfd, recvBuff, sizeof(recvBuff)-1)) > 0)
 		{
-			recvBuff[n] = 0;
+			//recvBuff[n] = 0;
 
 			// debug
-			if(fputs(recvBuff, stdout) == EOF)
-			{
-					printf("\n Error : Fputs error\n");
-			}
+			//if(fputs(recvBuff, stdout) == EOF)
+			//{
+			//		printf("\n Error : Fputs error\n");
+			//}
 			
 			// TODO state-ek
-			res = process_client_message(0, recvBuff, sizeof(recvBuff));
+			printf("Client: Get message. size %d \n",n);
+			res = process_client_message(0, recvBuff, n);
 			continue;
 		}
 		else{
 			fprintf(stderr,"Client: Hiba: read %d %s. \n",n,strerror(errno));
 			return;
 		}
-		pthread_cond_signal (&server_cond);
+		//pthread_cond_signal (&server_cond);
 
 
-		pthread_mutex_unlock(&server_mutex);
+		//pthread_mutex_unlock(&server_mutex);
 	}	
 	printf("Client: Receive thread return \n");
 }

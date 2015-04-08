@@ -20,6 +20,39 @@ int act_client;
 int act_face;
 int act_quan;
 
+int new_game(int dices[][MAX_DICE_NUM]){
+	int client, index, j, res;
+
+	printf("Server: New game\n");
+	act_face = 0;
+	act_quan = 0;
+	act_client = 0;
+	new_dices(dices);
+
+	act_roll.msgID = NEW_DICE_ROLL;
+	
+
+	for(index = 0; index < MAX_CLIENT_NUM; index++){
+		client = clients_connfd[index];
+		if(client <= 0){
+			continue;
+		}
+		for(j = 0; j < MAX_DICE_NUM; j++){
+			act_roll.dices[j] = dices[index][j];
+		}
+
+		res = write(client, (void*)&act_roll, sizeof(act_roll));
+		
+		if(res < 0){
+			fprintf(stderr,"Hiba: Server: send message in new_game, index %d client ID %d %s\n", index, client, strerror(errno));
+		}		
+
+	}
+}
+
+// kovetkezo kor
+// PROP_BID msg kuldese
+
 int next_round(){
 	int index;
 	int res;
@@ -29,11 +62,11 @@ int next_round(){
 	prop_act_bid.bid_face = act_face;
 	prop_act_bid.bid_quantity = act_quan;
 
-	act_client++;
-	if(act_client - 1 > clients_num){
+	if(act_client > clients_num - 1){
 		act_client = 0;
 	}
 
+	printf("Server: New round\n");
 	for(index = 0; index < MAX_CLIENT_NUM; index++){
 		client = clients_connfd[index];
 		if(client <= 0){
@@ -46,11 +79,14 @@ int next_round(){
 			prop_act_bid.your_turn = false;
 		}
 
-		res = write(client, (void*)&prop_act_bid, sizeof(struct server_prop_bid_msg));
+		printf("Server: New round msg sent to client: index %d act client: %d\n",index, act_client);
+		res = write(client, (void*)&prop_act_bid, sizeof(prop_act_bid));
 		
 		if(res < 0){
-			fprintf(stderr,"Hiba: Server: send message in next round, index %d cliet ID %d %s\n", index, client, strerror(errno));
+			fprintf(stderr,"Hiba: Server: send message in next round, index %d client ID %d %s\n", index, client, strerror(errno));
 		}		
+
+		act_client++;
 	}
 }
 
@@ -97,6 +133,9 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 
 		case REG_CLIENT:
 			client_reg = *(struct client_reg_msg*)msg;
+
+
+
 			printf("Server: Client registered name: %s\n", client_reg.name);
 			break;
 
@@ -111,11 +150,9 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 
 						// mindenki kész?
 						if(is_every_client_ready() == true){
-							act_face = 0;
-							act_quan = 0;
-							act_client = 0;
+							printf("Server: Every client is ready\n");
 							ret = 1;
-							new_dices(dices);
+							new_game(dices);
 							next_round();
 						}
 
@@ -153,124 +190,7 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 	
 	printf("Server: get message ID %d client %d\n",msg_ID, client_ID);
 	return ret;
-//	new_dices(dices);
 }
 
-// ------------------------
-// Accept clients
-// ------------------------
 
-//TODO disconnectnél mivan?
-void* accept_clients(void* arg){
-	int index;
-	int found, clients_num;
-	int connfd;
-	int listenfd;
-	struct sockaddr client_addr;
-	socklen_t client_addr_len;
-
-	// klienstömb inicializálás
-	for(index = 0; index < MAX_CLIENT_NUM; index++)
-		clients_connfd[index] = -1;
-
-	listenfd = *(int*)arg;
-
-	printf("Server: Accept thread started \n");
-	while(1){
-
-		// TODO blockolora
-		//while(connfd < 0){
-		printf("Server: Waiting for clients socket %d\n",listenfd);
-		if(	(connfd = accept(listenfd, &client_addr, &client_addr_len)) < 0){
-			fprintf(stderr,"Server: Hiba: accept %s. \n",strerror(errno));
-		} 
-		printf("Server: Accept client: %d \n", connfd);
-		//}
-
-		pthread_mutex_lock(&clients_mutex);
-
-		found = 0;
-		for(index = 0; index < MAX_CLIENT_NUM; index++){
-			if(clients_connfd[index] == connfd){
-				break;
-			}
-			if(clients_connfd[index] < 0){
-				found = 1;
-				clients_connfd[index] = connfd;
-				printf("Server: New client added. index: %d fd: %d\n",index, connfd);
-
-			for(index = 0, clients_num = 0; index < MAX_CLIENT_NUM; index++){
-				if(clients_connfd[index] > -1){
-					clients_num ++;
-					break;
-				}
-			}
-				//client_ID = (struct your_ID*)malloc(sizeof(client_ID));
-				client_ID.msgID = YOUR_ID;
-				client_ID.client_ID = index;
-				printf("Server: yourID index: %d\n",index);
-				write(clients_connfd[index], (void*)&client_ID, sizeof(struct your_ID));
-				//free(client_ID);
-				break;
-			}
-		}
-		//if(found){
-		//	pthread_cond_signal (&clients_cond);
-		//}
-
-
-
-		// Az összes kliens csatlakozott
-		if(clients_num >= MAX_CLIENT_NUM){
-			pthread_mutex_unlock(&clients_mutex);
-			break;
-		}
-		pthread_mutex_unlock(&clients_mutex);
-	}
-	printf("Server: Accept thread return \n");
-}
-
-// ----------------------------
-// Receive message from clients
-// ----------------------------
-
-void* receive_from_clients(void* arg){
-	int n = 0;
-	char recvBuff[SOCKET_SIZE];
-	int index;
-	int clients_num = 0;
-	int res;
-	int listenfd;
-
-	printf("Server: Receive thread started. Socket: %d\n",listenfd);
-
-	listenfd = *(int*)arg;
-	memset(recvBuff, '0',sizeof(recvBuff));
-	while(1){
-		//pthread_mutex_lock(&client_mutex);
-		if((n = read(listenfd, recvBuff, sizeof(recvBuff)-1)) > 0)
-		{
-			recvBuff[n] = 0;
-
-			// debug
-			if(fputs(recvBuff, stdout) == EOF)
-			{
-					printf("\n Server: Error : Fputs error\n");
-			}
-
-			res = process_server_message(state, recvBuff, sizeof(recvBuff),dices);
-			continue;
-	
-		}
-		else{
-			fprintf(stderr,"Server: Hiba: read %d %s. \n",n,strerror(errno));
-			return;
-		}
-		//pthread_cond_signal (&server_cond);
-
-		
-		//pthread_mutex_unlock(&client_mutex);
-	}	
-	printf("Client: Receive thread return \n");
-}
 

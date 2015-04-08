@@ -10,6 +10,18 @@
 // -1: removed dice (client had a dice)
 //  0: valid dice
 
+
+// ----------------
+// Initialize dices
+
+void init_dices(int dices_array[][MAX_DICE_NUM]){
+	int client;
+	int dice;
+	for(client = 0; client < MAX_CLIENT_NUM; client ++)
+	for(dice = 0; dice < MAX_DICE_NUM; dice ++)
+	dices_array[client][dice] = -2;
+}
+
 // ----------
 // New dices
 // osszunk új kockákat

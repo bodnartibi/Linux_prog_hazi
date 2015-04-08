@@ -180,14 +180,13 @@ int main(int argc, char* argv[]){
 					printf("Catch message client: %d\n", index);
 					res = read(client, recvBuff, sizeof(recvBuff)-1);
 					if(res > 0){
-						recvBuff[res] = 0;
-		
 						res = process_server_message(state, recvBuff, sizeof(recvBuff),dices);
 					}
 					else if(res == 0){
 						printf("Client disconnected: %d\n", index);
 						clients_connfd[index] = -1;
 						clients_ready[index] = -1;
+						clients_num --;
 					}
 					else{
 						fprintf(stderr,"Server: Hiba: read %d %s. \n",res,strerror(errno));
