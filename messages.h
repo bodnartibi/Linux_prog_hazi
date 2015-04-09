@@ -12,6 +12,7 @@
 #define MAX_DICE_NUM 			5
 
 #define SOCKET_SIZE 1024
+#define INFO_SIZE 256
 
 // ------
 // STATES
@@ -61,6 +62,9 @@
 #define WHO_WON						0x13
 
 // End phase
+
+
+#define INFO							0x40
 
 
 
@@ -138,6 +142,11 @@ struct who_won_msg{
 struct your_ID{
 	int msgID;
 	int client_ID;
+};
+
+struct info_msg{
+	int msgID;
+	char msg[INFO_SIZE];
 };
 #endif
 

@@ -21,6 +21,7 @@ struct your_ID									my_ID;
 struct client_reg_msg						reg;
 struct client_game_msg					game_msg;
 struct client_ready							ready_msg;
+struct info_msg									info;
 
 int process_client_message(int phase, void* msg, int msglen) {
 	int msg_ID ;
@@ -138,13 +139,19 @@ int process_client_message(int phase, void* msg, int msglen) {
 		case NEW_DICE_ROLL:
 			act_roll = *(struct server_newroll_msg*)msg;
 		
-			printf("Client: Your dices: ");
+			printf("Your dices: ");
 			for(index = 0; index < MAX_DICE_NUM; index++){
 				if(act_roll.dices[index] > 0)
 				printf("%d ",act_roll.dices[index]);
 			}
 			printf("\n");
 	
+			break;
+
+
+		case INFO:
+			info = *(struct info_msg*)msg;
+			printf("%s",info.msg);
 			break;
 
 		default:

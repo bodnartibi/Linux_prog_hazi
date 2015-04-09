@@ -11,6 +11,7 @@ struct your_ID									client_ID;
 struct client_reg_msg						client_reg;
 struct client_ready							client_red;
 struct client_game_msg					client_game;
+struct info_msg									info;
 
 int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DICE_NUM]);
 

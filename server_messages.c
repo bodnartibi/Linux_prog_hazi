@@ -19,6 +19,30 @@ int act_client;
 
 int act_face;
 int act_quan;
+int bid_client;
+
+
+int broadcast_info(char* msg){
+	int index;
+	int client;
+	int res;
+
+	info.msgID = INFO;
+	strcpy(info.msg, msg);
+
+	for(index = 0; index < MAX_CLIENT_NUM; index++){
+		client = clients_connfd[index];
+		if(client <= 0){
+			continue;
+		}
+
+		res = write(client, (void*)&info, sizeof(info));
+		
+		if(res < 0){
+			fprintf(stderr,"Hiba: Server: send info, index %d client ID %d %s\n", index, client, strerror(errno));
+		}	
+	}
+}
 
 int new_game(int dices[][MAX_DICE_NUM]){
 	int client, index, j, res;
@@ -116,6 +140,7 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 	msg_ID = *(int*)msg;
 	client_ID = *(int*)(msg + 1);
 	int ret = 0;
+	char buf[256];
 
 	// ------------------------------
 	// check if ID matches with phase
@@ -174,12 +199,25 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 
 		case CHALLENGE:
 			client_game = *(struct client_game_msg*)msg;
+			ret = check_challenge(act_face, act_quan, dices);
+			if(ret){
+				remove_client_dices(client_game.client_ID, 1, dices);
+				sprintf(buf,"Challange! Client %d lost a dice \n",client_game.client_ID);	
+			} else {
+				remove_client_dices(bid_client, 1, dices);
+				sprintf(buf,"Challange! Client %d lost a dice \n",bid_client);	
+			}
+			
+			broadcast_info(buf);
+			new_game(dices);
+			next_round();
 			break;
 		
 		case NEW_BID:
 			client_game = *(struct client_game_msg*)msg;
 			act_face = client_game.bid_face;
 			act_quan = client_game.bid_quantity;
+			bid_client = client_game.client_ID;
 			next_round();
 			break;
 
