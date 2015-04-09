@@ -107,6 +107,7 @@ int process_client_message(int phase, void* msg, int msglen) {
 
 				my_quan = atoi((user_buf + index));
 
+				game_msg.msgID = NEW_BID;
 				game_msg.client_ID = my_ID.client_ID;
 				game_msg.bid_face = my_face;
 				game_msg.bid_quantity = my_quan;
@@ -116,6 +117,7 @@ int process_client_message(int phase, void* msg, int msglen) {
 
 			} else if(user_buf[0] == 'c' || user_buf[0] == 'C'){
 
+				game_msg.msgID = CHALLENGE;
 				game_msg.challenge == true;
 
 			} else {
@@ -125,8 +127,7 @@ int process_client_message(int phase, void* msg, int msglen) {
 				break;
 
 			}
-			
-			game_msg.msgID = NEW_BID;
+		
 	
 			res = write(sockfd, (void*)&game_msg, sizeof(game_msg));
 			if(res < 0){

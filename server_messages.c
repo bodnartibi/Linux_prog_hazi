@@ -86,8 +86,9 @@ int next_round(){
 			fprintf(stderr,"Hiba: Server: send message in next round, index %d client ID %d %s\n", index, client, strerror(errno));
 		}		
 
-		act_client++;
 	}
+
+	act_client++;
 }
 
 int is_every_client_ready(){
