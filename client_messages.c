@@ -29,6 +29,8 @@ int process_client_message(int phase, void* msg, int msglen) {
 	int index;
 	int my_face;
 	int my_quan;
+
+	char user_buf[256];
 	// ------------------------------
 	// check if ID matches with phase
 	// TODO ez még gány
@@ -75,15 +77,56 @@ int process_client_message(int phase, void* msg, int msglen) {
 			act_bid = *(struct server_prop_bid_msg*)msg;
 			printf("Client: Actual bid: face %d quantity %d your turn? %d\n", act_bid.bid_face, act_bid.bid_quantity, act_bid.your_turn);
 			
+			if(act_bid.your_turn != true){
+				break;
+			}
+			printf("This is your turn.\n Options: \n New bid: bid <face> <quantitiy> \n Challenge: challenge\n");
 			//TODO külön kezelni a user inputot, hogy bármikor tudjunk írni
-			scanf("%d %d",&my_face, &my_quan);
-			//TODO csak nagyobb lehet a tét
-			printf("Client: New bid: face %d quantity %d\n", my_face, my_quan);
+			res = read(STDIN_FILENO, &user_buf, sizeof(user_buf)-1 );
+			user_buf[sizeof(user_buf)] = 0;
 
+			// Cliens want to add new bid
+			if(user_buf[0] == 'b' || user_buf[0] == 'B'){
+				
+				index = 0;
+				for(; index < sizeof(user_buf); index ++){
+					if(user_buf[index] == ' '){
+						break;
+					}
+				}
+				index++;
+
+				my_face = atoi((user_buf + index));
+
+				for(; index < sizeof(user_buf); index ++){
+					if(user_buf[index] == ' '){
+						break;
+					}
+				}
+				index++;
+
+				my_quan = atoi((user_buf + index));
+
+				game_msg.client_ID = my_ID.client_ID;
+				game_msg.bid_face = my_face;
+				game_msg.bid_quantity = my_quan;
+
+				//TODO csak nagyobb lehet a tét
+				printf("Client: New bid: face %d quantity %d\n", my_face, my_quan);
+
+			} else if(user_buf[0] == 'c' || user_buf[0] == 'C'){
+
+				game_msg.challenge == true;
+
+			} else {
+				//TODO ha lesz vmi mutexes/signalos móka itt, akkor a rekurzióval baj lesz
+				printf("Client: Hiba: wrong user input. Try again \n");
+				process_client_message(phase, msg, msglen);
+				break;
+
+			}
+			
 			game_msg.msgID = NEW_BID;
-			game_msg.client_ID = my_ID.client_ID;
-			game_msg.bid_face = my_face;
-			game_msg.bid_quantity = my_quan;
 	
 			res = write(sockfd, (void*)&game_msg, sizeof(game_msg));
 			if(res < 0){

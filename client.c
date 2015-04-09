@@ -47,14 +47,7 @@ void* receive_from_server(){
 		//pthread_mutex_lock(&server_mutex);
 		if((n = read(sockfd, recvBuff, sizeof(recvBuff)-1)) > 0)
 		{
-			//recvBuff[n] = 0;
 
-			// debug
-			//if(fputs(recvBuff, stdout) == EOF)
-			//{
-			//		printf("\n Error : Fputs error\n");
-			//}
-			
 			// TODO state-ek
 			printf("Client: Get message. size %d \n",n);
 			res = process_client_message(0, recvBuff, n);

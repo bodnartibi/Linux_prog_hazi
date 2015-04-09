@@ -13,7 +13,5 @@ struct client_ready							client_red;
 struct client_game_msg					client_game;
 
 int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DICE_NUM]);
-void* receive_from_clients(void* arg);
-void* accept_clients(void* arg);
 
 #endif
