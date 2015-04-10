@@ -42,7 +42,8 @@ void new_dices(int dices_array[][MAX_DICE_NUM]){
 
 // ------------------------
 // Add client to dice array
-// Megkeressük az első üres helyet
+// 	We find the first empty index
+// Return: where we add the client
 
 int add_client_to_dices(int dices_array[][MAX_DICE_NUM]){
 	int client;
@@ -105,8 +106,31 @@ int remove_client_dices(int client_id, int dices_num, int dices_array[][MAX_DICE
 	return found;
 }
 
+// ----------------
+// Nyert valaki?
+// Return: a nyero kliens indexe, ha senki nem nyert akko nulla
 
+int is_this_end_of_game(int dices_array[][MAX_DICE_NUM]){
+	int dice;
+	int clients_with_dices = 0;
+	int index;
+	int client_index = -1;
 
+	for(index = 0; index < MAX_CLIENT_NUM; index ++){
+		for(dice = 0; dice < MAX_DICE_NUM; dice ++){
+			if(dices_array[index][dice] > 0){
+				clients_with_dices++;
+				client_index = index;
+				break;
+			}
+		}
+	}
+
+	if(clients_with_dices > 1){
+		return index;
+	}
+	return -1;
+}
 
 
 
