@@ -143,6 +143,8 @@ int main(int argc, char* argv[]){
 				if(clients_connfd[index] < 0){
 					found = 1;
 					clients_connfd[index] = new_socket;
+
+					
 					res = add_client_to_dices(dices);
 					if(index != res){
 						fprintf(stderr,"Server: Hiba: add_client_to_dices res %d  index %d. \n",res, index);
@@ -158,9 +160,9 @@ int main(int argc, char* argv[]){
 				client_ID.msgID = YOUR_ID;
 				client_ID.client_ID = index;
 				printf("Server: yourID index: %d\n",index);
-				res = write(clients_connfd[index], (void*)&client_ID, sizeof(struct your_ID));
+				res = send(clients_connfd[index], (void*)&client_ID, sizeof(struct your_ID),0);
 				if(res < 0){
-					fprintf(stderr,"Server: Hiba: write %d %s. \n",res,strerror(errno));
+					fprintf(stderr,"Server: Hiba: send %d %s. \n",res,strerror(errno));
 				}
 
 				break;

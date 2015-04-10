@@ -2,22 +2,28 @@ CC=gcc
 CFLAGS=-I.
 LDFLAGS=-pthread
 
-all: server client
+all: clean server client
 
 server: server.o server_messages.o server_gamelogic.o
-	$(CC) server.o server_messages.o server_gamelogic.o -o server
+	$(CC) $(LDFLAGS) server.o server_messages.o server_gamelogic.o -o server
 
 server.o:
-	$(CC) $(LDFLAGS) -c -Wall server.c
+	$(CC)  -c server.c
 
 server_messages.o:
-	$(CC)  -c -Wall server_messages.c
+	$(CC)  -c server_messages.c
 
 server_gamelogic.o:
-	$(CC)  -c -Wall server_gamelogic.c
+	$(CC)  -c server_gamelogic.c
 
-client:
-	$(CC) $(LDFLAGS) -o client client.c client_messages.c
+client: client.o client_messages.o
+	$(CC)  $(LDFLAGS) client.o client_messages.o -o client
+
+client.o:
+	$(CC) -c client.c
+
+client_messages.o:
+	$(CC) -c client_messages.c
 
 clean:
-	rm *o
+	rm -f *o

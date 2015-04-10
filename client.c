@@ -45,15 +45,12 @@ void* receive_from_server(){
 	memset(recvBuff, '0',sizeof(recvBuff));
 	while(1){
 		//pthread_mutex_lock(&server_mutex);
-		if((n = read(sockfd, recvBuff, sizeof(recvBuff)-1)) > 0)
-		{
-
+		if((n = recv(sockfd, recvBuff, sizeof(recvBuff)-1, 0) > 0)){
 			// TODO state-ek
 			printf("Client: Get message. size %d \n",n);
 			res = process_client_message(0, recvBuff, n);
 			continue;
-		}
-		else{
+		}	else{
 			fprintf(stderr,"Client: Hiba: read %d %s. \n",n,strerror(errno));
 			return;
 		}

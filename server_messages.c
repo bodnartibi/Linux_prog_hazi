@@ -25,7 +25,7 @@ int bid_client;
 int broadcast_info(char* msg){
 	int index;
 	int client;
-	int res;
+	int res = 0;
 
 	info.msgID = INFO;
 	strcpy(info.msg, msg);
@@ -36,8 +36,11 @@ int broadcast_info(char* msg){
 			continue;
 		}
 
-		res = write(client, (void*)&info, sizeof(info));
+		res = send(client, (void*)&info, sizeof(info), 0);
 		
+		//TODO ha több üzenetet nem fogadot tmgé akliens akkor azok ugyanabba a bufferbe írodnak, ezt ott kezelni kell
+		// erre hack itt a sleep
+		sleep(1);
 		if(res < 0){
 			fprintf(stderr,"Hiba: Server: send info, index %d client ID %d %s\n", index, client, strerror(errno));
 		}	
@@ -48,6 +51,7 @@ int new_game(int dices[][MAX_DICE_NUM]){
 	int client, index, j, res;
 
 	printf("Server: New game\n");
+	broadcast_info("New game\n");
 	act_face = 0;
 	act_quan = 0;
 	act_client = 0;
@@ -55,7 +59,6 @@ int new_game(int dices[][MAX_DICE_NUM]){
 
 	act_roll.msgID = NEW_DICE_ROLL;
 	
-
 	for(index = 0; index < MAX_CLIENT_NUM; index++){
 		client = clients_connfd[index];
 		if(client <= 0){
@@ -65,7 +68,7 @@ int new_game(int dices[][MAX_DICE_NUM]){
 			act_roll.dices[j] = dices[index][j];
 		}
 
-		res = write(client, (void*)&act_roll, sizeof(act_roll));
+		res = send(client, (void*)&act_roll, sizeof(act_roll),0);
 		
 		if(res < 0){
 			fprintf(stderr,"Hiba: Server: send message in new_game, index %d client ID %d %s\n", index, client, strerror(errno));
@@ -90,6 +93,7 @@ int next_round(){
 		act_client = 0;
 	}
 
+	broadcast_info("New round\n");
 	printf("Server: New round\n");
 	for(index = 0; index < MAX_CLIENT_NUM; index++){
 		client = clients_connfd[index];
@@ -104,7 +108,7 @@ int next_round(){
 		}
 
 		printf("Server: New round msg sent to client: index %d act client: %d\n",index, act_client);
-		res = write(client, (void*)&prop_act_bid, sizeof(prop_act_bid));
+		res = send(client, (void*)&prop_act_bid, sizeof(prop_act_bid),0);
 		
 		if(res < 0){
 			fprintf(stderr,"Hiba: Server: send message in next round, index %d client ID %d %s\n", index, client, strerror(errno));
@@ -159,10 +163,8 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 
 		case REG_CLIENT:
 			client_reg = *(struct client_reg_msg*)msg;
-
-
-
-			printf("Server: Client registered name: %s\n", client_reg.name);
+			strcpy(client_names[client_reg.client_ID], client_reg.name);
+			printf("Server: Client registered name: %s\n", client_names[client_reg.client_ID]);
 			break;
 
 
@@ -227,7 +229,7 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 			break;
 	}
 	
-	printf("Server: get message ID %d client %d\n",msg_ID, client_ID);
+	printf("Server: get message ID %d client %d\n",msg_ID, ((struct client_gen_msg*)msg)->client_ID);
 	return ret;
 }
 

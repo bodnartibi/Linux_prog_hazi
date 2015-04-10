@@ -76,6 +76,7 @@
 
 struct client_gen_msg {
 	int msgID;
+	int client_ID;
 	void* content;
 };
 

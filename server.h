@@ -19,6 +19,7 @@ int clients_num;
 // condition: clients_con
 int clients_connfd[MAX_CLIENT_NUM];
 int clients_ready[MAX_CLIENT_NUM];
+char client_names[MAX_CLIENT_NUM][MAX_NAME_LENGTH];
 pthread_mutex_t clients_mutex;
 pthread_cond_t clients_cond;
 

@@ -150,8 +150,9 @@ int process_client_message(int phase, void* msg, int msglen) {
 
 
 		case INFO:
+
 			info = *(struct info_msg*)msg;
-			printf("%s",info.msg);
+			printf("\n====== \n%s",info.msg);
 			break;
 
 		default:
