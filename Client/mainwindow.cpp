@@ -1,9 +1,21 @@
 #include "mainwindow.h"
 
+void MainWindow::connectionReady()
+{
+    isConnected = true;
+}
 
 // felulet ujraformalasa, ha mar elkezdődött a jaték
-void MainWindow::enterGameState()
+void MainWindow::nameIsSet()
 {
+    isReady = true;
+    name_label->setText("Your name: " + name_textedit->text());
+    name_textedit->hide();
+    ready_button->hide();
+
+
+
+    repaint();
     return;
 }
 
@@ -34,8 +46,15 @@ MainWindow::MainWindow(QWidget *parent)
     main_layout->addLayout(name_layout);
     name_layout->addWidget(ready_button);
 
-    //centralWidget->setLayout(main_layout);
-    connect(ready_button,SIGNAL(clicked()),this,SLOT(enterGameState()));
+    status_label = new QLabel("Connecting to server...");
+    main_layout->addWidget(status_label);
+
+    connect(ready_button,SIGNAL(clicked()),this,SLOT(nameIsSet()));
+
+    socket = new QTcpSocket(this);
+
+    connect(socket,SIGNAL(connected()),this,SLOT(connectionReady()));
+    socket->connectToHost("localhost",5000);
 }
 
 MainWindow::~MainWindow()

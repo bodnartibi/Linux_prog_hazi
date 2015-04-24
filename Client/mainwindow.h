@@ -55,8 +55,13 @@ private:
 
     QTcpSocket* socket;
 
+
+    bool isReady = false;
+    bool isConnected = false;
+
 public slots:
-    void enterGameState();
+    void nameIsSet();
+    void connectionReady();
 
 signals:
 
