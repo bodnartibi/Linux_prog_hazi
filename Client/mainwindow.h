@@ -13,7 +13,7 @@
 #include <QLineEdit>
 
 #include <QtNetwork/QTcpSocket>
-
+#include <clientMessages.h>
 
 class MainWindow : public QMainWindow
 {
@@ -22,10 +22,12 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
+    ClientMessages* proc_msg;
 
 private:
 
     QWidget *centralWidget;
+
 
     // fo layout
     QVBoxLayout* main_layout;
@@ -52,6 +54,10 @@ private:
         QLineEdit* add_quan_textedit;
         QLabel* add_face_label;
         QLineEdit* add_face_textedit;
+        QPushButton* set_bid_button;
+        QPushButton* chal_button;
+
+        QLabel* actual_bid_layout;
 
     QTcpSocket* socket;
 
@@ -59,12 +65,16 @@ private:
     bool isReady = false;
     bool isConnected = false;
 
+    void enterGameState();
+
 public slots:
     void nameIsSet();
     void connectionReady();
+    void getMessage();
+    void sendMessage(void* msg, int msglen);
 
 signals:
-
+    void process_msg(void* msg, int len);
 
 };
 

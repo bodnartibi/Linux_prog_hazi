@@ -14,6 +14,9 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    clientMessages.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+        ../messages.h \
+    clientMessages.h

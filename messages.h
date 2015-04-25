@@ -3,8 +3,7 @@
 
 #define TRUE 1
 #define FALSE 0
-#define true TRUE
-#define false FALSE
+
 
 
 #define MAX_CLIENT_NUM 		2
