@@ -20,13 +20,20 @@ class ClientMessages : public QObject
     Q_OBJECT
 
 public:
-    QString my_name;
+
 
 public slots:
     void process_client_message(void*, int);
+    void set_name(const char* name);
+    void set_new_bid(int quan, int face);
+    void challenge();
+
 
 signals:
     void send_msg(void* msg, int msglen);
+    void this_is_your_turn();
+    void new_bid(int quan, int face);
+    void new_dices(int* dices);
 
 private:
     struct server_prop_client_msg 	clients;
@@ -38,6 +45,8 @@ private:
     struct client_game_msg			game_msg;
     struct client_ready				ready_msg;
     struct info_msg					info;
+
+    QString my_name;
 };
 
 

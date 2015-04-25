@@ -98,7 +98,7 @@ int main(int argc, char* argv[]){
 
 	printf("Waiting for clients\n");
 
-	while(true){
+	while(TRUE){
 	
 //	sleep(1);
 	//clear the socket set
@@ -160,6 +160,7 @@ int main(int argc, char* argv[]){
 				client_ID.msgID = YOUR_ID;
 				client_ID.client_ID = index;
 				printf("Server: yourID index: %d\n",index);
+				sleep(1);
 				res = send(clients_connfd[index], (void*)&client_ID, sizeof(struct your_ID),0);
 				if(res < 0){
 					fprintf(stderr,"Server: Hiba: send %d %s. \n",res,strerror(errno));

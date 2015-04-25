@@ -102,9 +102,9 @@ int next_round(){
 		}
 
 		if(index == act_client){
-			prop_act_bid.your_turn = true;
+			prop_act_bid.your_turn = TRUE;
 		} else {
-			prop_act_bid.your_turn = false;
+			prop_act_bid.your_turn = FALSE;
 		}
 
 		printf("Server: New round msg sent to client: index %d act client: %d\n",index, act_client);
@@ -121,11 +121,11 @@ int next_round(){
 
 int is_every_client_ready(){
 	int i, j;
-	int ready = true;
+	int ready = TRUE;
 
 	for(i = 0; i < MAX_CLIENT_NUM; i++){
-		if((clients_connfd[i] > -1) && (clients_ready[i] != true)){
-			ready = false;
+		if((clients_connfd[i] > -1) && (clients_ready[i] != TRUE)){
+			ready = FALSE;
 			break;
 		}
 	}
@@ -172,12 +172,12 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 			client_red = *(struct client_ready*)msg;
 			printf("Server: Client ready id: %d\n", client_red.client_ID);
 
-					if(client_red.ready == true){
+					if(client_red.ready == TRUE){
 						printf("Server: Client ready: ID %d\n", client_red.client_ID);
-						clients_ready[client_red.client_ID] = true;
+						clients_ready[client_red.client_ID] = TRUE;
 
 						// mindenki kész?
-						if(is_every_client_ready() == true){
+						if(is_every_client_ready() == TRUE){
 							printf("Server: Every client is ready\n");
 							ret = 1;
 							new_game(dices);
@@ -186,9 +186,9 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 
 						break;
 					}
-					else if(client_red.ready == false){
+					else if(client_red.ready == FALSE){
 						printf("Server: Client doesn't ready: ID %d\n", client_red.client_ID);
-						clients_ready[client_red.client_ID] = false;
+						clients_ready[client_red.client_ID] = FALSE;
 						break;
 					}
 					else{

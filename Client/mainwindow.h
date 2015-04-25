@@ -73,8 +73,16 @@ public slots:
     void getMessage();
     void sendMessage(void* msg, int msglen);
 
+    void bid_buttonclicked();
+
+    void this_is_your_turn();
+    void new_bid(int quan, int face);
+    void new_dices(int* new_dices);
+
 signals:
     void process_msg(void* msg, int len);
+    void set_name(const char* name);
+    void set_new_bid(int quan, int face);
 
 };
 
