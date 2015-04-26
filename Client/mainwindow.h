@@ -37,6 +37,7 @@ private:
     QHBoxLayout* name_layout;
         QLabel* name_label;
         QLineEdit* name_textedit;
+        QPushButton* name_button;
         QPushButton* ready_button;
 
     // status label
@@ -69,6 +70,7 @@ private:
 
 public slots:
     void nameIsSet();
+    void ready_clicked();
     void connectionReady();
     void getMessage();
     void sendMessage(void* msg, int msglen);
@@ -83,6 +85,7 @@ signals:
     void process_msg(void* msg, int len);
     void set_name(const char* name);
     void set_new_bid(int quan, int face);
+    void client_is_ready();
 
 };
 

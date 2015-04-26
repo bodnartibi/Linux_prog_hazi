@@ -16,15 +16,21 @@ struct client_game_msg					game_msg;
 struct client_ready							ready_msg;
 struct info_msg									info;
 
-
-void ClientMessages::set_name(const char* name)
+void ClientMessages::client_is_ready()
 {
     ready_msg.msgID = CLIENT_READY;
     ready_msg.client_ID = my_ID.client_ID;
     ready_msg.ready = true;
 
-
     emit send_msg(&ready_msg, sizeof(ready_msg));
+}
+
+void ClientMessages::set_name(const char* name)
+{ 
+    reg.msgID = REG_CLIENT;
+    reg.client_ID = my_ID.client_ID;
+    strcpy(&reg.name[0], name);
+    emit send_msg(&reg, sizeof(reg));
     return;
 }
 
@@ -59,10 +65,6 @@ void ClientMessages::process_client_message(void* msg, int msglen)
 
         case YOUR_ID:
             my_ID = *(struct your_ID*)msg;
-            reg.msgID = REG_CLIENT;
-            reg.client_ID = my_ID.client_ID;
-            strcpy(&reg.name[0], my_name.toStdString().c_str());
-            emit send_msg(&reg, sizeof(reg));
 
             if(msglen > sizeof(your_ID))
                 process_client_message((msg+sizeof(your_ID)), msglen - sizeof(your_ID));
@@ -103,5 +105,4 @@ void ClientMessages::process_client_message(void* msg, int msglen)
     }
     printf("Client: get message ID %d\n",msg_ID);
     return;
-//	new_dices(dices);
 }

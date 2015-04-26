@@ -3,4 +3,5 @@
 server
 client
 build-Client-Desktop-Debug
+build-Client-Desktop-Release
 *.user

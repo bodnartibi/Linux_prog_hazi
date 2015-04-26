@@ -27,6 +27,7 @@ public slots:
     void set_name(const char* name);
     void set_new_bid(int quan, int face);
     void challenge();
+    void client_is_ready();
 
 
 signals:

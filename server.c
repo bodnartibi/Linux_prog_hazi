@@ -96,6 +96,7 @@ int main(int argc, char* argv[]){
 		exit(EXIT_FAILURE);
 	}
 
+	init_dices(dices);
 	printf("Waiting for clients\n");
 
 	while(TRUE){

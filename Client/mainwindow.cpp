@@ -1,5 +1,11 @@
 #include "mainwindow.h"
 
+void MainWindow::ready_clicked()
+{
+    ready_button->hide();
+    emit client_is_ready();
+}
+
 void MainWindow::bid_buttonclicked()
 {
     int face, quan;
@@ -67,6 +73,12 @@ void MainWindow::new_dices(int* new_dices)
         str.append(QString::number(d) + " ");
     }
     dices->setText(str);
+    add_quan_label->hide();
+    add_quan_textedit->hide();
+    add_face_label->hide();
+    add_face_textedit->hide();
+    set_bid_button->hide();
+    chal_button->hide();
     repaint();
     return;
 }
@@ -94,6 +106,95 @@ void MainWindow::sendMessage(void* msg, int msglen)
 void MainWindow::enterGameState()
 {
     status_label->setText("Game started, waiting for dices");
+
+
+    repaint();
+    return;
+}
+
+
+void MainWindow::connectionReady()
+{
+    isConnected = true;
+    status_label->setText("Connected");
+    repaint();
+    if(isReady)
+        enterGameState();
+}
+
+// felulet ujraformalasa, ha mar elkezdődött a jaték
+void MainWindow::nameIsSet()
+{
+    isReady = true;
+    name_label->setText("Your name: " + name_textedit->text());
+    name_textedit->hide();
+    name_button->hide();
+    ready_button->show();
+    emit set_name(name_textedit->text().toStdString().c_str());
+    repaint();
+    if(isConnected)
+        enterGameState();
+    return;
+}
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+{
+    //centralWidget = new QWidget(this);
+    //this->setCentralWidget(this);
+
+    centralWidget = new QWidget(this);
+    this->setCentralWidget( centralWidget );
+
+    // TODO felszabaditasok?
+    main_layout = new QVBoxLayout(centralWidget);
+    this->setWindowTitle("Liar's dice");
+
+    name_layout = new QHBoxLayout();
+
+
+    name_label = new QLabel("Please add your name: ");
+    name_layout->addWidget(name_label);
+
+    name_textedit = new QLineEdit();
+    name_layout->addWidget(name_textedit);
+
+    name_button = new QPushButton("Set name");
+
+    main_layout->addLayout(name_layout);
+    name_layout->addWidget(name_button);
+
+    ready_button = new QPushButton("Ready");
+
+    name_layout->addWidget(ready_button);
+    ready_button->hide();
+
+    status_label = new QLabel("Connecting to server...");
+    main_layout->addWidget(status_label);
+
+    connect(name_button,SIGNAL(clicked()),this,SLOT(nameIsSet()));
+    connect(ready_button,SIGNAL(clicked()),this,SLOT(ready_clicked()));
+
+    proc_msg = new ClientMessages;
+    connect(this,SIGNAL(client_is_ready()),proc_msg,SLOT(client_is_ready()));
+
+    socket = new QTcpSocket(this);
+
+    connect(socket,SIGNAL(connected()),this,SLOT(connectionReady()));
+    connect(socket,SIGNAL(readyRead()),this,SLOT(getMessage()));
+    socket->connectToHost("localhost",5000);
+
+
+    connect(proc_msg,SIGNAL(send_msg(void*,int)),this,SLOT(sendMessage(void*,int)));
+    connect(this,SIGNAL(process_msg(void*,int)),proc_msg,SLOT(process_client_message(void*,int)));
+
+    connect(proc_msg,SIGNAL(this_is_your_turn()),this,SLOT(this_is_your_turn()));
+    connect(proc_msg,SIGNAL(new_bid(int,int)),this,SLOT(new_bid(int,int)));
+    connect(proc_msg,SIGNAL(new_dices(int*)),this,SLOT(new_dices(int*)));
+
+    connect(this,SIGNAL(set_name(const char*)),proc_msg,SLOT(set_name(const char*)));
+    connect(this,SIGNAL(set_new_bid(int,int)),proc_msg,SLOT(set_new_bid(int,int)));
+
     dices = new QLabel("");
     game_input_layout = new QGridLayout();
     main_layout->addWidget(dices);
@@ -131,85 +232,6 @@ void MainWindow::enterGameState()
 
     connect(set_bid_button,SIGNAL(clicked()),this,SLOT(bid_buttonclicked()));
     connect(chal_button,SIGNAL(clicked()),proc_msg,SLOT(challenge()));
-
-    repaint();
-    return;
-}
-
-
-void MainWindow::connectionReady()
-{
-    isConnected = true;
-    status_label->setText("Connected");
-    repaint();
-    if(isReady)
-        enterGameState();
-}
-
-// felulet ujraformalasa, ha mar elkezdődött a jaték
-void MainWindow::nameIsSet()
-{
-    isReady = true;
-    name_label->setText("Your name: " + name_textedit->text());
-    name_textedit->hide();
-    ready_button->hide();
-    emit set_name(name_textedit->text().toStdString().c_str());
-    repaint();
-    if(isConnected)
-        enterGameState();
-    return;
-}
-
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-{
-    //centralWidget = new QWidget(this);
-    //this->setCentralWidget(this);
-
-    centralWidget = new QWidget(this);
-    this->setCentralWidget( centralWidget );
-
-    // TODO felszabaditasok?
-    main_layout = new QVBoxLayout(centralWidget);
-    this->setWindowTitle("Liar's dice");
-
-    name_layout = new QHBoxLayout();
-
-
-    name_label = new QLabel("Please add your name: ");
-    name_layout->addWidget(name_label);
-
-    name_textedit = new QLineEdit();
-    name_layout->addWidget(name_textedit);
-
-    ready_button = new QPushButton("Ready");
-
-    main_layout->addLayout(name_layout);
-    name_layout->addWidget(ready_button);
-
-    status_label = new QLabel("Connecting to server...");
-    main_layout->addWidget(status_label);
-
-    connect(ready_button,SIGNAL(clicked()),this,SLOT(nameIsSet()));
-
-    socket = new QTcpSocket(this);
-
-    connect(socket,SIGNAL(connected()),this,SLOT(connectionReady()));
-    connect(socket,SIGNAL(readyRead()),this,SLOT(getMessage()));
-    socket->connectToHost("localhost",5000);
-
-    proc_msg = new ClientMessages;
-    connect(proc_msg,SIGNAL(send_msg(void*,int)),this,SLOT(sendMessage(void*,int)));
-    connect(this,SIGNAL(process_msg(void*,int)),proc_msg,SLOT(process_client_message(void*,int)));
-
-    connect(proc_msg,SIGNAL(this_is_your_turn()),this,SLOT(this_is_your_turn()));
-    connect(proc_msg,SIGNAL(new_bid(int,int)),this,SLOT(new_bid(int,int)));
-    connect(proc_msg,SIGNAL(new_dices(int*)),this,SLOT(new_dices(int*)));
-
-    connect(this,SIGNAL(set_name(const char*)),proc_msg,SLOT(set_name(const char*)));
-    connect(this,SIGNAL(set_new_bid(int,int)),proc_msg,SLOT(set_new_bid(int,int)));
-
-
 
 }
 
