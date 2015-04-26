@@ -221,6 +221,7 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 		case CHALLENGE:
 			client_game = *(struct client_game_msg*)msg;
 			ret = check_challenge(act_face, act_quan, dices);
+
 			if(ret){
 				remove_client_dices(client_game.client_ID, 1, dices);
 				sprintf(buf,"Challange! %s lost a dice \n",client_names[client_game.client_ID]);	
@@ -240,7 +241,7 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 			act_quan = client_game.bid_quantity;
 			bid_client = client_game.client_ID;
 	
-			sprintf(buf,"%s has added a new bid: quantity %d face %d\n",client_names[client_reg.client_ID],act_quan,act_face);		
+			sprintf(buf,"%s has added a new bid: quantity %d face %d\n",client_names[bid_client],act_quan,act_face);		
 			broadcast_info(buf);
 
 			next_round();

@@ -1,5 +1,6 @@
 #include "server_gamelogic.h"
 #include "messages.h"
+#include <stdio.h>
 
 // ----------
 // Game logic
@@ -85,11 +86,13 @@ int remove_client_dices(int client_id, int dices_num, int dices_array[][MAX_DICE
 	int dice;
 	int found = -1;
 	int num;
+
 	if(client_id >= MAX_CLIENT_NUM){
 		return -1;
 	}
+
 	for(num = 0; num < dices_num; num ++){
-		for(dice = MAX_DICE_NUM; dice > -1; dice --){
+		for(dice = MAX_DICE_NUM - 1 ; dice > -1; dice --){
 			if(dices_array[client_id][dice] > -1){
 				dices_array[client_id][dice] = -1;
 				found = 0;
