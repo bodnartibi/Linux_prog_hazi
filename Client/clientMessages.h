@@ -35,6 +35,7 @@ signals:
     void this_is_your_turn();
     void new_bid(int quan, int face);
     void new_dices(int* dices);
+    void new_info_msg(const char* name);
 
 private:
     struct server_prop_client_msg 	clients;
@@ -47,7 +48,7 @@ private:
     struct client_ready				ready_msg;
     struct info_msg					info;
 
-    QString my_name;
+
 };
 
 

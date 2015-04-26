@@ -43,6 +43,7 @@ private:
     // status label
     QLabel* status_label;
 
+    QTextEdit* info_window;
     // jatek fo layout
     QVBoxLayout* game_main_layout;
 
@@ -80,6 +81,8 @@ public slots:
     void this_is_your_turn();
     void new_bid(int quan, int face);
     void new_dices(int* new_dices);
+
+    void new_info_msg(const char* name);
 
 signals:
     void process_msg(void* msg, int len);

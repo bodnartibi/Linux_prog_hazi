@@ -59,11 +59,11 @@ void ClientMessages::process_client_message(void* msg, int msglen)
 {
     int msg_ID ;
     msg_ID = *(int*)msg;
-    int res;
 
     switch(msg_ID){
 
         case YOUR_ID:
+            fprintf(stderr,"Client: get message YOUR_ID \n");
             my_ID = *(struct your_ID*)msg;
 
             if(msglen > sizeof(your_ID))
@@ -72,6 +72,7 @@ void ClientMessages::process_client_message(void* msg, int msglen)
             break;
 
         case PROP_BID:
+            fprintf(stderr,"Client: get message PROP_BID \n");
             act_bid = *(struct server_prop_bid_msg*)msg;
             emit new_bid(act_bid.bid_quantity, act_bid.bid_face);
 
@@ -79,30 +80,33 @@ void ClientMessages::process_client_message(void* msg, int msglen)
                 emit this_is_your_turn();
             }
 
-            if(msglen > sizeof(PROP_BID))
-                process_client_message((msg+sizeof(PROP_BID)), msglen - sizeof(PROP_BID));
+            if(msglen > sizeof(act_bid))
+                process_client_message((msg+sizeof(act_bid)), msglen - sizeof(act_bid));
             break;
 
         case NEW_DICE_ROLL:
+            fprintf(stderr,"Client: get message NEW_DICE_ROLL \n");
             act_roll = *(struct server_newroll_msg*)msg;
             emit new_dices(&act_roll.dices[0]);
 
-            if(msglen > sizeof(NEW_DICE_ROLL))
-                process_client_message((msg+sizeof(NEW_DICE_ROLL)), msglen - sizeof(NEW_DICE_ROLL));
+            if(msglen > sizeof(act_roll))
+                process_client_message((msg+sizeof(act_roll)), msglen - sizeof(act_roll));
             break;
 
         case INFO:
-
+            fprintf(stderr,"Client: get message INFO \n");
             info = *(struct info_msg*)msg;
             printf("\n====== \n%s",info.msg);
-            if(msglen > sizeof(INFO))
-                process_client_message((msg+sizeof(INFO)), msglen - sizeof(INFO));
+            emit new_info_msg(info.msg);
+            if(msglen > sizeof(info))
+                process_client_message((msg+sizeof(info)), msglen - sizeof(info));
             break;
 
         default:
             fprintf(stderr,"Hiba: Client: invalid messagetype msgID: %d\n", msg_ID);
             break;
     }
-    printf("Client: get message ID %d\n",msg_ID);
+
+
     return;
 }

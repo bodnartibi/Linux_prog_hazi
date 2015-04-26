@@ -34,6 +34,7 @@ int main(int argc, char* argv[]){
 	char recvBuff[SOCKET_SIZE];
 	socklen_t client_addr_len;
 
+	int tr=1;
 	struct sockaddr_in serv_addr;
 	//set of socket descriptors
 	fd_set readfds, readfds_copy;
@@ -69,7 +70,13 @@ int main(int argc, char* argv[]){
 		fprintf(stderr,"Server: Hiba: open socket %s. \n",strerror(errno));;
 		exit(EXIT_FAILURE);
 	}
-	
+
+
+	// kill "Address already in use" error message
+	if (setsockopt(listenfd,SOL_SOCKET,SO_REUSEADDR,&tr,sizeof(int)) == -1) {
+	    perror("setsockopt");
+	    exit(1);
+	}
 	printf("Socket created. %d \n", listenfd);
 	memset(&serv_addr, '0', sizeof(serv_addr));
 	//memset(sendBuff, '0', sizeof(sendBuff)); 
@@ -96,7 +103,8 @@ int main(int argc, char* argv[]){
 		exit(EXIT_FAILURE);
 	}
 
-	init_dices(dices);
+	//TODO nem ide kellene, diszkonnektnél kellene, és akkor még üzenet is kellene
+	// laapból rosszul van még kezelve a diszkonnekt
 	printf("Waiting for clients\n");
 
 	while(TRUE){
@@ -145,11 +153,6 @@ int main(int argc, char* argv[]){
 					found = 1;
 					clients_connfd[index] = new_socket;
 
-					
-					res = add_client_to_dices(dices);
-					if(index != res){
-						fprintf(stderr,"Server: Hiba: add_client_to_dices res %d  index %d. \n",res, index);
-					}
 					clients_num ++;
 					printf("Server: New client added. index: %d fd: %d\n",index, new_socket);	
 				}

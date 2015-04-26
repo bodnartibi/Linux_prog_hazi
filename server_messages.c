@@ -119,16 +119,30 @@ int next_round(){
 	act_client++;
 }
 
-int is_every_client_ready(){
-	int i, j;
+int is_every_client_ready(int dices[][MAX_DICE_NUM]){
+	int i, j, res;
 	int ready = TRUE;
 
 	for(i = 0; i < MAX_CLIENT_NUM; i++){
 		if((clients_connfd[i] > -1) && (clients_ready[i] != TRUE)){
 			ready = FALSE;
 			break;
+	}
+	init_dices(dices);
+
+
+	for(i = 0; i < MAX_CLIENT_NUM; i++){
+		if(clients_connfd[i] > -1){
+			res = add_client_to_dices(dices);
+			if(res < 0){
+				fprintf(stderr,"Server: Hiba: add_client_to_dices. \n");
+			}
 		}
 	}
+
+	}
+
+
 	return ready;
 }
 
@@ -177,7 +191,7 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 						clients_ready[client_red.client_ID] = TRUE;
 
 						// mindenki kész?
-						if(is_every_client_ready() == TRUE){
+						if(is_every_client_ready(dices) == TRUE){
 							printf("Server: Every client is ready\n");
 							ret = 1;
 							new_game(dices);

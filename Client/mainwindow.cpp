@@ -1,5 +1,12 @@
 #include "mainwindow.h"
 
+void MainWindow::new_info_msg(const char* msg)
+{
+    QString str(msg);
+    info_window->append(str);
+    return;
+}
+
 void MainWindow::ready_clicked()
 {
     ready_button->hide();
@@ -146,6 +153,7 @@ MainWindow::MainWindow(QWidget *parent)
     centralWidget = new QWidget(this);
     this->setCentralWidget( centralWidget );
 
+    centralWidget->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
     // TODO felszabaditasok?
     main_layout = new QVBoxLayout(centralWidget);
     this->setWindowTitle("Liar's dice");
@@ -169,14 +177,21 @@ MainWindow::MainWindow(QWidget *parent)
     name_layout->addWidget(ready_button);
     ready_button->hide();
 
+    ////
     status_label = new QLabel("Connecting to server...");
     main_layout->addWidget(status_label);
+
+    ////
+    info_window = new QTextEdit();
+    info_window->setReadOnly(true);
+    main_layout->addWidget(info_window);
 
     connect(name_button,SIGNAL(clicked()),this,SLOT(nameIsSet()));
     connect(ready_button,SIGNAL(clicked()),this,SLOT(ready_clicked()));
 
     proc_msg = new ClientMessages;
     connect(this,SIGNAL(client_is_ready()),proc_msg,SLOT(client_is_ready()));
+    connect(proc_msg,SIGNAL(new_info_msg(const char*)),this,SLOT(new_info_msg(const char*)));
 
     socket = new QTcpSocket(this);
 
@@ -194,6 +209,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(this,SIGNAL(set_name(const char*)),proc_msg,SLOT(set_name(const char*)));
     connect(this,SIGNAL(set_new_bid(int,int)),proc_msg,SLOT(set_new_bid(int,int)));
+
+    ////
 
     dices = new QLabel("");
     game_input_layout = new QGridLayout();
