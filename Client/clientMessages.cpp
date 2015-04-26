@@ -59,13 +59,14 @@ void ClientMessages::process_client_message(void* msg, int msglen)
 {
     int msg_ID ;
     msg_ID = *(int*)msg;
+    char buff[256];
+    int i;
 
     switch(msg_ID){
 
         case YOUR_ID:
-            fprintf(stderr,"Client: get message YOUR_ID \n");
             my_ID = *(struct your_ID*)msg;
-
+            fprintf(stderr,"Client: get message YOUR_ID %d\n", my_ID.client_ID);
             if(msglen > sizeof(your_ID))
                 process_client_message((msg+sizeof(your_ID)), msglen - sizeof(your_ID));
 
@@ -88,6 +89,15 @@ void ClientMessages::process_client_message(void* msg, int msglen)
             fprintf(stderr,"Client: get message NEW_DICE_ROLL \n");
             act_roll = *(struct server_newroll_msg*)msg;
             emit new_dices(&act_roll.dices[0]);
+
+            sprintf(buff,"You have new dices: ");
+            for(i = 0; i < MAX_DICE_NUM; i++)
+            {
+                if(act_roll.dices[i] > 0)
+                    sprintf(buff + strlen(buff), "%d ",act_roll.dices[i]);
+            }
+
+            emit new_info_msg(buff);
 
             if(msglen > sizeof(act_roll))
                 process_client_message((msg+sizeof(act_roll)), msglen - sizeof(act_roll));

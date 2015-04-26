@@ -45,21 +45,15 @@ void new_dices(int dices_array[][MAX_DICE_NUM]){
 // 	We find the first empty index
 // Return: where we add the client
 
-int add_client_to_dices(int dices_array[][MAX_DICE_NUM]){
-	int client;
+int add_client_to_dices(int clientid, int dices_array[][MAX_DICE_NUM]){
 	int dice;
-	int index = -1;
-	for(client = 0; client < MAX_CLIENT_NUM; client ++) {
-		if (dices_array[client][0] > -1){
-			continue;
-		}
-		for(dice = 0; dice < MAX_DICE_NUM; dice ++){
-			dices_array[client][dice] = 0;
-		}
-		index = client;
-		break;
+	for(dice = 0; dice < MAX_DICE_NUM; dice ++){
+		if(dices_array[clientid][dice] > -1)
+			return -1;
+		dices_array[clientid][dice] = 0;
 	}
-	return index;
+
+	return 0;
 }
 
 // ----------------

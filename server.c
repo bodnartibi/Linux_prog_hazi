@@ -164,7 +164,7 @@ int main(int argc, char* argv[]){
 				client_ID.msgID = YOUR_ID;
 				client_ID.client_ID = index;
 				printf("Server: yourID index: %d\n",index);
-				sleep(1);
+				//sleep(1);
 				res = send(clients_connfd[index], (void*)&client_ID, sizeof(struct your_ID),0);
 				if(res < 0){
 					fprintf(stderr,"Server: Hiba: send %d %s. \n",res,strerror(errno));

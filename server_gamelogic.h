@@ -8,7 +8,7 @@
 
 void init_dices(int dices_array[][MAX_DICE_NUM]);
 void new_dices(int dices_array[][MAX_DICE_NUM]);
-int add_client_to_dices(int dices_array[][MAX_DICE_NUM]);
+int add_client_to_dices(int client_id, int dices_array[][MAX_DICE_NUM]);
 int check_challenge(int face, int quantity,int dices_array[][MAX_DICE_NUM]);
 int remove_client_dices(int client_id, int dices_num, int dices_array[][MAX_DICE_NUM]);
 int is_this_end_of_game(int dices_array[][MAX_DICE_NUM]);

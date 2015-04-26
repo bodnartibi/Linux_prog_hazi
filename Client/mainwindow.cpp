@@ -2,8 +2,10 @@
 
 void MainWindow::new_info_msg(const char* msg)
 {
+
     QString str(msg);
-    info_window->append(str);
+    str.replace("\n","");
+    info_window-> append(str);
     return;
 }
 
@@ -57,6 +59,7 @@ void MainWindow::this_is_your_turn()
     set_bid_button->show();
     chal_button->show();
 
+    info_window->append("This is your turn!");
     return;
 }
 
@@ -72,7 +75,7 @@ void MainWindow::new_dices(int* new_dices)
 {
     QString str("Your dices: ");
     int d;
-    for(int i; i < MAX_DICE_NUM; i++)
+    for(int i = 0; i < MAX_DICE_NUM; i++)
     {
         d = *(new_dices + i);
         if (d < 1)
@@ -184,6 +187,10 @@ MainWindow::MainWindow(QWidget *parent)
     ////
     info_window = new QTextEdit();
     info_window->setReadOnly(true);
+
+    //sb = info_window->verticalScrollBar();
+    //sb->setValue(sb->maximum());
+
     main_layout->addWidget(info_window);
 
     connect(name_button,SIGNAL(clicked()),this,SLOT(nameIsSet()));
@@ -240,11 +247,11 @@ MainWindow::MainWindow(QWidget *parent)
     add_face_textedit->hide();
 
     set_bid_button = new QPushButton("New Bid");
-    game_input_layout->addWidget(set_bid_button,2,2);
+    game_input_layout->addWidget(set_bid_button,1,2);
     set_bid_button->hide();
 
     chal_button = new QPushButton("Challenge!");
-    game_input_layout->addWidget(chal_button,3,2);
+    game_input_layout->addWidget(chal_button,2,2);
     chal_button->hide();
 
     connect(set_bid_button,SIGNAL(clicked()),this,SLOT(bid_buttonclicked()));

@@ -38,9 +38,6 @@ int broadcast_info(char* msg){
 
 		res = send(client, (void*)&info, sizeof(info), 0);
 		
-		//TODO ha több üzenetet nem fogadot tmgé akliens akkor azok ugyanabba a bufferbe írodnak, ezt ott kezelni kell
-		// erre hack itt a sleep
-		sleep(1);
 		if(res < 0){
 			fprintf(stderr,"Hiba: Server: send info, index %d client ID %d %s\n", index, client, strerror(errno));
 		}	
@@ -103,6 +100,9 @@ int next_round(){
 
 		if(index == act_client){
 			prop_act_bid.your_turn = TRUE;
+			
+			sprintf(buf,"This is %s's round\n",client_names[index]);		
+			broadcast_info(buf);
 		} else {
 			prop_act_bid.your_turn = FALSE;
 		}
@@ -121,29 +121,23 @@ int next_round(){
 
 int is_every_client_ready(int dices[][MAX_DICE_NUM]){
 	int i, j, res;
-	int ready = TRUE;
 
 	for(i = 0; i < MAX_CLIENT_NUM; i++){
-		if((clients_connfd[i] > -1) && (clients_ready[i] != TRUE)){
-			ready = FALSE;
-			break;
+		if((clients_connfd[i] > -1) && (clients_ready[i] != TRUE))
+			return FALSE;
 	}
 	init_dices(dices);
 
 
 	for(i = 0; i < MAX_CLIENT_NUM; i++){
 		if(clients_connfd[i] > -1){
-			res = add_client_to_dices(dices);
+			res = add_client_to_dices(i,dices);
 			if(res < 0){
 				fprintf(stderr,"Server: Hiba: add_client_to_dices. \n");
 			}
 		}
 	}
-
-	}
-
-
-	return ready;
+	return TRUE;
 }
 
 // return:
@@ -158,7 +152,6 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 	msg_ID = *(int*)msg;
 	client_ID = *(int*)(msg + 1);
 	int ret = 0;
-	char buf[256];
 
 	// ------------------------------
 	// check if ID matches with phase
@@ -179,6 +172,10 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 			client_reg = *(struct client_reg_msg*)msg;
 			strcpy(client_names[client_reg.client_ID], client_reg.name);
 			printf("Server: Client registered name: %s\n", client_names[client_reg.client_ID]);
+			
+			sprintf(buf,"New player: %s\n",client_names[client_reg.client_ID]);		
+			broadcast_info(buf);
+	
 			break;
 
 
@@ -188,11 +185,19 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 
 					if(client_red.ready == TRUE){
 						printf("Server: Client ready: ID %d\n", client_red.client_ID);
+
+						sprintf(buf,"%s is ready to play\n",client_names[client_red.client_ID]);		
+						broadcast_info(buf);
+
 						clients_ready[client_red.client_ID] = TRUE;
 
 						// mindenki kész?
 						if(is_every_client_ready(dices) == TRUE){
 							printf("Server: Every client is ready\n");
+
+							sprintf(buf,"Everybody is ready to play\n");		
+							broadcast_info(buf);
+
 							ret = 1;
 							new_game(dices);
 							next_round();
@@ -218,10 +223,10 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 			ret = check_challenge(act_face, act_quan, dices);
 			if(ret){
 				remove_client_dices(client_game.client_ID, 1, dices);
-				sprintf(buf,"Challange! Client %d lost a dice \n",client_game.client_ID);	
+				sprintf(buf,"Challange! %s lost a dice \n",client_names[client_game.client_ID]);	
 			} else {
 				remove_client_dices(bid_client, 1, dices);
-				sprintf(buf,"Challange! Client %d lost a dice \n",bid_client);	
+				sprintf(buf,"Challange! %s lost a dice \n",client_names[bid_client]);	
 			}
 			
 			broadcast_info(buf);
@@ -234,6 +239,10 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 			act_face = client_game.bid_face;
 			act_quan = client_game.bid_quantity;
 			bid_client = client_game.client_ID;
+	
+			sprintf(buf,"%s has added a new bid: quantity %d face %d\n",client_names[client_reg.client_ID],act_quan,act_face);		
+			broadcast_info(buf);
+
 			next_round();
 			break;
 

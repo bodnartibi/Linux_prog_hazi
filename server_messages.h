@@ -13,6 +13,8 @@ struct client_ready							client_red;
 struct client_game_msg					client_game;
 struct info_msg									info;
 
+char buf[256];
+
 int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DICE_NUM]);
 
 #endif
