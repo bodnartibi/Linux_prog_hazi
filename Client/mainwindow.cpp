@@ -1,5 +1,56 @@
 #include "mainwindow.h"
 
+void MainWindow::sy_won(const char* name, bool is_it_you)
+{
+    ready_button->show();
+    QString str(name);
+    if(is_it_you)
+    {
+        info_window-> append("YOU WON");
+        status_label->setText("YOU WON");
+    }
+    else
+    {
+        QString str(name);
+        info_window->append("You failed, " + str + " won");
+        status_label->setText("You failed, " + str + " won");
+    }
+
+    add_quan_label->hide();
+    add_quan_textedit->hide();
+    add_face_label->hide();
+    add_face_textedit->hide();
+    set_bid_button->hide();
+    chal_button->hide();
+
+    dices->setText("");
+    bid_face_label->setText("");
+    bid_quan_label->setText("");
+
+    repaint();
+}
+
+
+
+void MainWindow::sy_disconnected(const char* name)
+{
+    ready_button->show();
+    QString str(name);
+    info_window-> append(str + " disconnected, please send \"ready\" again");
+    add_quan_label->hide();
+    add_quan_textedit->hide();
+    add_face_label->hide();
+    add_face_textedit->hide();
+    set_bid_button->hide();
+    chal_button->hide();
+
+    dices->setText("");
+    bid_face_label->setText("");
+    bid_quan_label->setText("");
+
+    repaint();
+}
+
 void MainWindow::new_info_msg(const char* msg)
 {
 
@@ -33,7 +84,18 @@ void MainWindow::bid_buttonclicked()
         return;
     }
 
-    status_label->setText("Your bid sent");
+    if(face > 6 || \
+       face < 2 || \
+       face < proc_msg->getBid().bid_face || \
+       quan < proc_msg->getBid().bid_quantity || \
+       (face == proc_msg->getBid().bid_face) &&  (quan == proc_msg->getBid().bid_quantity)
+       )
+    {
+        status_label->setText("Wrong bid");
+        return;
+    }
+
+    status_label->setText("Waitint for your turn");
 
     emit set_new_bid(quan,face);
 
@@ -73,6 +135,7 @@ void MainWindow::new_bid(int quan, int face)
 
 void MainWindow::new_dices(int* new_dices)
 {
+    status_label->setText("New turn");
     QString str("Your dices: ");
     int d;
     for(int i = 0; i < MAX_DICE_NUM; i++)
@@ -115,7 +178,7 @@ void MainWindow::sendMessage(void* msg, int msglen)
 
 void MainWindow::enterGameState()
 {
-    status_label->setText("Game started, waiting for dices");
+    status_label->setText("Waiting for other clients");
 
 
     repaint();
@@ -181,8 +244,11 @@ MainWindow::MainWindow(QWidget *parent)
     ready_button->hide();
 
     ////
+    QFont font;
+    font.setPointSize(16);
     status_label = new QLabel("Connecting to server...");
     main_layout->addWidget(status_label);
+    status_label->setFont(font);
 
     ////
     info_window = new QTextEdit();
@@ -216,10 +282,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(this,SIGNAL(set_name(const char*)),proc_msg,SLOT(set_name(const char*)));
     connect(this,SIGNAL(set_new_bid(int,int)),proc_msg,SLOT(set_new_bid(int,int)));
+    connect(proc_msg,SIGNAL(sy_disconnected(const char*)),this,SLOT(sy_disconnected(const char*)));
+
+    connect(proc_msg,SIGNAL(sy_won(const char*,bool)),this,SLOT(sy_won(const char*,bool)));
 
     ////
 
     dices = new QLabel("");
+    dices->setFont(font);
     game_input_layout = new QGridLayout();
     main_layout->addWidget(dices);
     main_layout->addLayout(game_input_layout);
@@ -256,6 +326,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(set_bid_button,SIGNAL(clicked()),this,SLOT(bid_buttonclicked()));
     connect(chal_button,SIGNAL(clicked()),proc_msg,SLOT(challenge()));
+
+
 
 }
 

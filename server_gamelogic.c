@@ -123,8 +123,8 @@ int is_this_end_of_game(int dices_array[][MAX_DICE_NUM]){
 		}
 	}
 
-	if(clients_with_dices > 1){
-		return index;
+	if(clients_with_dices < 2){
+		return client_index;
 	}
 	return -1;
 }

@@ -20,7 +20,7 @@ class ClientMessages : public QObject
     Q_OBJECT
 
 public:
-
+    server_prop_bid_msg getBid();
 
 public slots:
     void process_client_message(void*, int);
@@ -36,6 +36,8 @@ signals:
     void new_bid(int quan, int face);
     void new_dices(int* dices);
     void new_info_msg(const char* name);
+    void sy_disconnected(const char* name);
+    void sy_won(const char* name, bool is_it_you);
 
 private:
     struct server_prop_client_msg 	clients;
@@ -47,7 +49,7 @@ private:
     struct client_game_msg			game_msg;
     struct client_ready				ready_msg;
     struct info_msg					info;
-
+    struct discon_msg				discon_msg;
 
 };
 

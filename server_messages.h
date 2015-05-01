@@ -12,6 +12,7 @@ struct client_reg_msg						client_reg;
 struct client_ready							client_red;
 struct client_game_msg					client_game;
 struct info_msg									info;
+struct discon_msg								discon_msg;
 
 char buf[256];
 

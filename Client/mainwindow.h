@@ -27,8 +27,6 @@ public:
 private:
 
     QWidget *centralWidget;
-
-
     // fo layout
     QVBoxLayout* main_layout;
 
@@ -84,6 +82,9 @@ public slots:
     void new_dices(int* new_dices);
 
     void new_info_msg(const char* name);
+    void sy_disconnected(const char* name);
+
+    void sy_won(const char* name, bool is_it_you);
 
 signals:
     void process_msg(void* msg, int len);

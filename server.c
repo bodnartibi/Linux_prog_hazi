@@ -191,6 +191,7 @@ int main(int argc, char* argv[]){
 					}
 					else if(res == 0){
 						printf("Client disconnected: %d\n", index);
+						broadcast_disconnected(index);
 						clients_connfd[index] = -1;
 						clients_ready[index] = -1;
 						clients_num --;

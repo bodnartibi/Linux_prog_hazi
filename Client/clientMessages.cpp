@@ -16,6 +16,11 @@ struct client_game_msg					game_msg;
 struct client_ready							ready_msg;
 struct info_msg									info;
 
+server_prop_bid_msg ClientMessages:: getBid()
+{
+    return act_bid;
+}
+
 void ClientMessages::client_is_ready()
 {
     ready_msg.msgID = CLIENT_READY;
@@ -110,6 +115,24 @@ void ClientMessages::process_client_message(void* msg, int msglen)
             emit new_info_msg(info.msg);
             if(msglen > sizeof(info))
                 process_client_message((msg+sizeof(info)), msglen - sizeof(info));
+            break;
+
+        case DISCONNECT:
+            fprintf(stderr,"Client: get message DISCONNECT \n");
+            discon_msg = *(struct discon_msg*)msg;
+            emit sy_disconnected(discon_msg.name);
+
+            if(msglen > sizeof(discon_msg))
+                process_client_message((msg+sizeof(discon_msg)), msglen - sizeof(discon_msg));
+            break;
+
+        case WHO_WON:
+
+            won = *(struct who_won_msg*)msg;
+            emit sy_won(won.name, (bool)won.is_it_you);
+
+            if(msglen > sizeof(won))
+                process_client_message((msg+sizeof(won)), msglen - sizeof(won));
             break;
 
         default:

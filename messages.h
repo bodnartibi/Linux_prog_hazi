@@ -61,7 +61,7 @@
 #define WHO_WON						0x13
 
 // End phase
-
+#define DISCONNECT              0x41
 
 #define INFO							0x40
 
@@ -135,6 +135,7 @@ struct server_prop_bid_msg{
 
 struct who_won_msg{
 	int msgID;
+    int is_it_you;
 	char name[MAX_NAME_LENGTH];
 };
 
@@ -147,6 +148,11 @@ struct your_ID{
 struct info_msg{
 	int msgID;
 	char msg[INFO_SIZE];
+};
+
+struct discon_msg{
+    int msgID;
+    char name[MAX_NAME_LENGTH];
 };
 #endif
 

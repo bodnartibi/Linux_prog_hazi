@@ -21,6 +21,64 @@ int act_face;
 int act_quan;
 int bid_client;
 
+void end_game(int who_won_id)
+{
+	int index;
+	int client;
+	int res;
+
+	won.msgID = WHO_WON;
+	
+	for(index = 0; index < MAX_CLIENT_NUM; index++){
+		client = clients_connfd[index];
+		if(client <= 0){
+			continue;
+		}
+
+		strcpy(client_names[who_won_id],won.name);
+
+		if(client == who_won_id){
+			won.is_it_you = 1;
+		} else {
+			won.is_it_you = 0;
+		}
+
+		res = send(client, (void*)&won, sizeof(won), 0);
+
+		if(res < 0){
+			fprintf(stderr,"Hiba: Server: send won, index %d client ID %d %s\n", index, client, strerror(errno));
+		}		
+	}
+
+	for(index = 0; index < MAX_CLIENT_NUM; index++)
+	{
+		clients_ready[index] = FALSE;
+	}
+
+}
+
+void broadcast_disconnected(int disclientID)
+{
+	int index;
+	int client;
+	int res;
+
+	discon_msg.msgID = DISCONNECT;
+	strcpy(client_names[disclientID],discon_msg.name);
+
+	for(index = 0; index < MAX_CLIENT_NUM; index++){
+		client = clients_connfd[index];
+		if(client <= 0 || client == disclientID){
+			continue;
+		}
+
+		res = send(client, (void*)&discon_msg, sizeof(discon_msg), 0);
+		
+		if(res < 0){
+			fprintf(stderr,"Hiba: Server: send disconnected, index %d client ID %d %s\n", index, client, strerror(errno));
+		}	
+	}
+}
 
 int broadcast_info(char* msg){
 	int index;
@@ -229,8 +287,17 @@ int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DIC
 				remove_client_dices(bid_client, 1, dices);
 				sprintf(buf,"Challange! %s lost a dice \n",client_names[bid_client]);	
 			}
-			
+
 			broadcast_info(buf);
+
+			ret = is_this_end_of_game(dices);
+			if(ret > 0)
+			{
+				printf("Server: Game over\n");
+				end_game(ret);
+				break;
+			}	
+
 			new_game(dices);
 			next_round();
 			break;
