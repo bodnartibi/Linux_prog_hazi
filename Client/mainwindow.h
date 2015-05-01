@@ -12,6 +12,8 @@
 #include <QtGui>
 #include <QLineEdit>
 
+//#include <QMessageBox>
+#include <QDialog>
 #include <QtNetwork/QTcpSocket>
 #include <clientMessages.h>
 
@@ -72,6 +74,8 @@ public slots:
     void nameIsSet();
     void ready_clicked();
     void connectionReady();
+    void server_disconnected();
+
     void getMessage();
     void sendMessage(void* msg, int msglen);
 

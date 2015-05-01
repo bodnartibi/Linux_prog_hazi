@@ -1,5 +1,20 @@
 #include "mainwindow.h"
 
+
+void MainWindow::server_disconnected()
+{
+    QDialog  diag;
+    QVBoxLayout lay;
+    diag.setLayout(&lay);
+    lay.addWidget(new QLabel("\nFatal: Server disconnected\n"));
+    QPushButton btn;
+    btn.setText("OK");
+    lay.addWidget(&btn);
+    connect(&btn,SIGNAL(clicked()),&diag,SLOT(close()));
+    diag.exec();
+    exit(0);
+}
+
 void MainWindow::sy_won(const char* name, bool is_it_you)
 {
     ready_button->show();
@@ -88,7 +103,7 @@ void MainWindow::bid_buttonclicked()
        face < 2 || \
        face < proc_msg->getBid().bid_face || \
        quan < proc_msg->getBid().bid_quantity || \
-       (face == proc_msg->getBid().bid_face) &&  (quan == proc_msg->getBid().bid_quantity)
+       ((face == proc_msg->getBid().bid_face) &&  (quan == proc_msg->getBid().bid_quantity))
        )
     {
         status_label->setText("Wrong bid");
@@ -190,6 +205,7 @@ void MainWindow::connectionReady()
 {
     isConnected = true;
     status_label->setText("Connected");
+    name_button->setText("Set name");
     repaint();
     if(isReady)
         enterGameState();
@@ -198,6 +214,12 @@ void MainWindow::connectionReady()
 // felulet ujraformalasa, ha mar elkezdődött a jaték
 void MainWindow::nameIsSet()
 {
+    if(!isConnected){
+        status_label->setText("Cannot find the server, try again");
+        socket->connectToHost("localhost",5000);
+        return;
+    }
+
     isReady = true;
     name_label->setText("Your name: " + name_textedit->text());
     name_textedit->hide();
@@ -233,7 +255,7 @@ MainWindow::MainWindow(QWidget *parent)
     name_textedit = new QLineEdit();
     name_layout->addWidget(name_textedit);
 
-    name_button = new QPushButton("Set name");
+    name_button = new QPushButton("Connect");
 
     main_layout->addLayout(name_layout);
     name_layout->addWidget(name_button);
@@ -270,8 +292,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(socket,SIGNAL(connected()),this,SLOT(connectionReady()));
     connect(socket,SIGNAL(readyRead()),this,SLOT(getMessage()));
+    connect(socket,SIGNAL(disconnected()),this,SLOT(server_disconnected()));
     socket->connectToHost("localhost",5000);
-
 
     connect(proc_msg,SIGNAL(send_msg(void*,int)),this,SLOT(sendMessage(void*,int)));
     connect(this,SIGNAL(process_msg(void*,int)),proc_msg,SLOT(process_client_message(void*,int)));
