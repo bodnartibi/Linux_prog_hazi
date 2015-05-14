@@ -24,12 +24,10 @@
 int listenfd;
 
 int main(int argc, char* argv[]){
-	int res, dice, face, quan, found;
-	int fd;
+	int res;
 	int new_socket, client;
-	char * msg;
-	int ID;
 	int index;
+	char* msg;
 	struct sockaddr client_addr;
 	char recvBuff[SOCKET_SIZE];
 	socklen_t client_addr_len;
@@ -37,7 +35,7 @@ int main(int argc, char* argv[]){
 	int tr=1;
 	struct sockaddr_in serv_addr;
 	//set of socket descriptors
-	fd_set readfds, readfds_copy;
+	fd_set readfds;
 	int max_fd;
 	client_addr_len = sizeof(client_addr);
 
@@ -55,7 +53,6 @@ int main(int argc, char* argv[]){
 	pthread_mutex_init(&state_mutex,NULL);
 	pthread_cond_init(&state_cond,NULL);
 	
-	state = REG_PHASE;
 
 	for(index = 0; index < MAX_CLIENT_NUM; index++){
 		clients_connfd[index] = -1;
@@ -150,9 +147,7 @@ int main(int argc, char* argv[]){
 //				break;
 //			}
 				if(clients_connfd[index] < 0){
-					found = 1;
 					clients_connfd[index] = new_socket;
-
 					clients_num ++;
 					printf("Server: New client added. index: %d fd: %d\n",index, new_socket);	
 				}

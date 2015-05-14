@@ -11,6 +11,7 @@
 #include <QDebug>
 #include <QtGui>
 #include <QLineEdit>
+#include <QInputDialog>
 
 //#include <QMessageBox>
 #include <QDialog>

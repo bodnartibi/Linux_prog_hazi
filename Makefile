@@ -8,13 +8,13 @@ server: server.o server_messages.o server_gamelogic.o
 	$(CC) $(LDFLAGS) server.o server_messages.o server_gamelogic.o -o server
 
 server.o:
-	$(CC)  -c server.c
+	$(CC)  -c -Wall server.c
 
 server_messages.o:
-	$(CC)  -c server_messages.c
+	$(CC)  -c -Wall server_messages.c
 
 server_gamelogic.o:
-	$(CC)  -c server_gamelogic.c
+	$(CC)  -c -Wall server_gamelogic.c
 
 
 clean:

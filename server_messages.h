@@ -3,7 +3,6 @@
 
 #include "messages.h"
 
-struct server_prop_client_msg 	clients;
 struct server_newroll_msg 			act_roll;
 struct server_prop_bid_msg			prop_act_bid;
 struct who_won_msg							won;

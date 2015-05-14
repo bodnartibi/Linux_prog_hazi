@@ -80,7 +80,7 @@ void broadcast_disconnected(int disclientID)
 	}
 }
 
-int broadcast_info(char* msg){
+void broadcast_info(char* msg){
 	int index;
 	int client;
 	int res = 0;
@@ -102,7 +102,7 @@ int broadcast_info(char* msg){
 	}
 }
 
-int new_game(int dices[][MAX_DICE_NUM]){
+void new_game(int dices[][MAX_DICE_NUM]){
 	int client, index, j, res;
 
 	printf("Server: New game\n");
@@ -135,7 +135,7 @@ int new_game(int dices[][MAX_DICE_NUM]){
 // kovetkezo kor
 // PROP_BID msg kuldese
 
-int next_round(){
+void next_round(){
 	int index;
 	int res;
 	int client;
@@ -178,7 +178,7 @@ int next_round(){
 }
 
 int is_every_client_ready(int dices[][MAX_DICE_NUM]){
-	int i, j, res;
+	int i, res;
 
 	for(i = 0; i < MAX_CLIENT_NUM; i++){
 		if((clients_connfd[i] > -1) && (clients_ready[i] != TRUE))
@@ -206,7 +206,6 @@ int is_every_client_ready(int dices[][MAX_DICE_NUM]){
 int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DICE_NUM]) {
 	int msg_ID ;
 	int	client_ID;
-	int index, i, j;
 	msg_ID = *(int*)msg;
 	client_ID = *(int*)(msg + 1);
 	int ret = 0;

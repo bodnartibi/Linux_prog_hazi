@@ -216,7 +216,14 @@ void MainWindow::nameIsSet()
 {
     if(!isConnected){
         status_label->setText("Cannot find the server, try again");
-        socket->connectToHost("localhost",5000);
+        bool ok;
+        QString addr = QInputDialog::getText(this,
+          "Server address", "Please enter the server host:",
+          QLineEdit::Normal, "localhost", &ok);
+        if(ok && !addr.isEmpty())
+        {
+            socket->connectToHost(addr,5000);
+        }
         return;
     }
 
@@ -348,8 +355,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(set_bid_button,SIGNAL(clicked()),this,SLOT(bid_buttonclicked()));
     connect(chal_button,SIGNAL(clicked()),proc_msg,SLOT(challenge()));
-
-
 
 }
 
