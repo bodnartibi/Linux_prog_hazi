@@ -68,6 +68,8 @@ void broadcast_disconnected(int disclientID)
 
 	for(index = 0; index < MAX_CLIENT_NUM; index++){
 		client = clients_connfd[index];
+		clients_ready[index] = FALSE;
+
 		if(client <= 0 || client == disclientID){
 			continue;
 		}
