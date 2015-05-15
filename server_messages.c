@@ -134,22 +134,25 @@ void new_game(int dices[][MAX_DICE_NUM]){
 
 // kovetkezo kor
 // PROP_BID msg kuldese
+// parameter, hogy hanyadik legyen a kovetkezo kliens
+// pl: 0, akkor ugyanay a kliens jon, 1, a kovetkezo kliens
 
-void next_round(){
+void next_round(int next){
 	int index;
 	int res;
 	int client;
+
+	act_client += next;
+	if(act_client > clients_num - 1){
+		act_client = 0;
+	}
 
 	prop_act_bid.msgID  = PROP_BID;
 	prop_act_bid.bid_face = act_face;
 	prop_act_bid.bid_quantity = act_quan;
 
-	if(act_client > clients_num - 1){
-		act_client = 0;
-	}
-
 	broadcast_info("New round\n");
-	printf("Server: New round\n");
+	printf("Server: New round, next: %d\n", next);
 	for(index = 0; index < MAX_CLIENT_NUM; index++){
 		client = clients_connfd[index];
 		if(client <= 0){
@@ -174,7 +177,6 @@ void next_round(){
 
 	}
 
-	act_client++;
 }
 
 int is_every_client_ready(int dices[][MAX_DICE_NUM]){
@@ -247,7 +249,7 @@ int process_server_message(void* msg, int msglen, int dices[][MAX_DICE_NUM]) {
 
 							ret = 1;
 							new_game(dices);
-							next_round();
+							next_round(1);
 						}
 
 						break;
@@ -288,11 +290,23 @@ int process_server_message(void* msg, int msglen, int dices[][MAX_DICE_NUM]) {
 			}	
 
 			new_game(dices);
-			next_round();
+			next_round(1);
 			break;
 		
 		case NEW_BID:
 			client_game = *(struct client_game_msg*)msg;
+
+			// ha nem ervenyes a tet, akkor ismet megkerjuk a klienst, hogy o jojjon
+    	if(client_game.bid_face > 6 || \
+       client_game.bid_face < 2 || \
+       client_game.bid_face < act_face || \
+       client_game.bid_quantity < act_quan || \
+       ((client_game.bid_face == act_face) &&  (client_game.bid_quantity == act_quan))
+      ){
+        next_round(0);
+				break;
+			}
+
 			act_face = client_game.bid_face;
 			act_quan = client_game.bid_quantity;
 			bid_client = client_game.client_ID;
@@ -300,7 +314,7 @@ int process_server_message(void* msg, int msglen, int dices[][MAX_DICE_NUM]) {
 			sprintf(buf,"%s has added a new bid: quantity %d face %d\n",client_names[bid_client],act_quan,act_face);		
 			broadcast_info(buf);
 
-			next_round();
+			next_round(1);
 			break;
 
 		default:
@@ -309,7 +323,7 @@ int process_server_message(void* msg, int msglen, int dices[][MAX_DICE_NUM]) {
 			break;
 	}
 	
-	printf("Server: get message ID %d client %d\n",msg_ID, ((struct client_gen_msg*)msg)->client_ID);
+	printf("Server: get message ID %d client %d\n",msg_ID, *(int*)(msg+sizeof(int)));
 	return ret;
 }
 

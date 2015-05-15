@@ -4,7 +4,7 @@
 #define TRUE 1
 #define FALSE 0
 
-#define MAX_CLIENT_NUM 		2
+#define MAX_CLIENT_NUM 		5
 #define MAX_NAME_LENGTH 	16
 #define MAX_DICE_NUM 			5
 
@@ -35,14 +35,6 @@
 // Structs
 // ---------------------
 
-// Generic message
-
-struct client_gen_msg {
-	int msgID;
-	int client_ID;
-	void* content;
-};
-
 // ---------------------
 // Client to server
 
@@ -63,7 +55,6 @@ struct client_ready{
 struct client_game_msg{
 	int msgID;
 	int client_ID;
-	char name[MAX_NAME_LENGTH];
 	int challenge;
 	int bid_face;
 	int bid_quantity;	
@@ -92,7 +83,7 @@ struct server_prop_bid_msg{
 
 struct who_won_msg{
 	int msgID;
-    int is_it_you;
+  int is_it_you;
 	char name[MAX_NAME_LENGTH];
 };
 

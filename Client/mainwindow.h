@@ -45,7 +45,7 @@ private:
     QLabel* status_label;
 
     QTextEdit* info_window;
-    QScrollBar *sb;
+    //QScrollBar *sb;
     // jatek fo layout
     QVBoxLayout* game_main_layout;
 
