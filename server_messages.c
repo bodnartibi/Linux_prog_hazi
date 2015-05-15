@@ -35,9 +35,9 @@ void end_game(int who_won_id)
 			continue;
 		}
 
-		strcpy(client_names[who_won_id],won.name);
+		strcpy(won.name,client_names[who_won_id]);
 
-		if(client == who_won_id){
+		if(index == who_won_id){
 			won.is_it_you = 1;
 		} else {
 			won.is_it_you = 0;
@@ -282,7 +282,7 @@ int process_server_message(void* msg, int msglen, int dices[][MAX_DICE_NUM]) {
 			broadcast_info(buf);
 
 			ret = is_this_end_of_game(dices);
-			if(ret > 0)
+			if(ret >= 0)
 			{
 				printf("Server: Game over\n");
 				end_game(ret);
