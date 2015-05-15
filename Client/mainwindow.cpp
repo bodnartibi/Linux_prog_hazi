@@ -98,18 +98,7 @@ void MainWindow::bid_buttonclicked()
         status_label->setText("Wrong input");
         return;
     }
-/*
-    if(face > 6 || \
-       face < 2 || \
-       face < proc_msg->getBid().bid_face || \
-       quan < proc_msg->getBid().bid_quantity || \
-       ((face == proc_msg->getBid().bid_face) &&  (quan == proc_msg->getBid().bid_quantity))
-       )
-    {
-        status_label->setText("Wrong bid");
-        return;
-    }
-*/
+
     status_label->setText("Waiting for your turn");
 
     emit set_new_bid(quan,face);

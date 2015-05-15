@@ -19,9 +19,6 @@ class ClientMessages : public QObject
 {
     Q_OBJECT
 
-public:
-    server_prop_bid_msg getBid();
-
 public slots:
     void process_client_message(void*, int);
     void set_name(const char* name);

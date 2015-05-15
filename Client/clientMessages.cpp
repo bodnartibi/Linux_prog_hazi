@@ -6,11 +6,6 @@
 //#include "client.h"
 #include <clientMessages.h>
 
-server_prop_bid_msg ClientMessages:: getBid()
-{
-    return act_bid;
-}
-
 void ClientMessages::client_is_ready()
 {
     ready_msg.msgID = CLIENT_READY;
@@ -22,9 +17,14 @@ void ClientMessages::client_is_ready()
 
 void ClientMessages::set_name(const char* name)
 { 
+    int len;
+    len = strlen(name);
+    if(len > MAX_NAME_LENGTH)
+        len = MAX_NAME_LENGTH;
     reg.msgID = REG_CLIENT;
     reg.client_ID = my_ID.client_ID;
-    strcpy(&reg.name[0], name);
+    memcpy(&reg.name[0], name, len);
+    reg.name[MAX_NAME_LENGTH - 1] = 0;
     emit send_msg(&reg, sizeof(reg));
     return;
 }
