@@ -15,6 +15,7 @@ struct discon_msg								discon_msg;
 
 char buf[256];
 
-int process_server_message(int phase, void* msg, int msglen, int dices[][MAX_DICE_NUM]);
+int process_server_message(void* msg, int msglen, int dices[][MAX_DICE_NUM]);
+void broadcast_disconnected(int disclientID);
 
 #endif

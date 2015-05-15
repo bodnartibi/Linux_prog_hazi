@@ -40,7 +40,6 @@ signals:
     void sy_won(const char* name, bool is_it_you);
 
 private:
-    struct server_prop_client_msg 	clients;
     struct server_newroll_msg		act_roll;
     struct server_prop_bid_msg		act_bid;
     struct who_won_msg				won;

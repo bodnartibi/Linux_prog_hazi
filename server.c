@@ -48,12 +48,6 @@ int main(int argc, char* argv[]){
 		return 1;
 	} 
 
-	pthread_mutex_init(&clients_mutex,NULL);
-	pthread_cond_init(&clients_cond,NULL);
-	pthread_mutex_init(&state_mutex,NULL);
-	pthread_cond_init(&state_cond,NULL);
-	
-
 	for(index = 0; index < MAX_CLIENT_NUM; index++){
 		clients_connfd[index] = -1;
 		clients_ready[index] = -1;
@@ -182,7 +176,7 @@ int main(int argc, char* argv[]){
 					printf("Catch message client: %d\n", index);
 					res = read(client, recvBuff, sizeof(recvBuff)-1);
 					if(res > 0){
-						res = process_server_message(state, recvBuff, sizeof(recvBuff),dices);
+						res = process_server_message(recvBuff, sizeof(recvBuff),dices);
 					}
 					else if(res == 0){
 						printf("Client disconnected: %d\n", index);

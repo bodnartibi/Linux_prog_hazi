@@ -24,7 +24,6 @@
 // Server to client messages
 // -------------------------
 
-#define PROP_CLIENT				0x00
 #define YOUR_ID						0x01
 #define NEW_DICE_ROLL			0x10
 #define PROP_BID					0x12

@@ -6,16 +6,6 @@
 //#include "client.h"
 #include <clientMessages.h>
 
-struct server_prop_client_msg 	clients;
-struct server_newroll_msg				act_roll;
-struct server_prop_bid_msg			act_bid;
-struct who_won_msg							won;
-struct your_ID									my_ID;
-struct client_reg_msg						reg;
-struct client_game_msg					game_msg;
-struct client_ready							ready_msg;
-struct info_msg									info;
-
 server_prop_bid_msg ClientMessages:: getBid()
 {
     return act_bid;
