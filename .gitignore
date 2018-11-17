@@ -1,7 +1,6 @@
 *~
 *.o
-server
-client
+*.swp
 build-Client-Desktop-Debug
 build-Client-Desktop-Release
 *.user
