@@ -10,7 +10,7 @@ bool
 Bid::SetBid(unsigned int face, unsigned int quantity)
 {
   if (face < 1 || face > 6 \
-      || quantity < 0 \
+      || quantity < 1 \
       || face < this->face || quantity < this->quantity)
     return false;
 
