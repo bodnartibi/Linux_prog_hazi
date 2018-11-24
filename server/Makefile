@@ -1,21 +1,13 @@
-CC=gcc
+CC=g++
 CFLAGS=-I. -I../common
 #LDFLAGS=-pthread
+all: client.o
 
-all: clean server
+client.o:
+	$(CC)  $(CFLAGS) -c client.c
 
-server: server.o server_messages.o server_gamelogic.o
-	$(CC) $(CFLAGS) $(LDFLAGS) server.o server_messages.o server_gamelogic.o -o server
-
-server.o:
-	$(CC)  $(CFLAGS) -c server.c
-
-server_messages.o:
-	$(CC)  $(CFLAGS) -c server_messages.c
-
-server_gamelogic.o:
-	$(CC)  $(CFLAGS) -c server_gamelogic.c
-
+check:
+	cd tests && make all
 
 clean:
 	rm -f *o
